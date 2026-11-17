@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: #06070b;
@@ -26,56 +27,21 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
-
-    body {
-      position: relative;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      overflow-x: hidden;
-      width: 100%;
-    }
+    body { position: relative; font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.5; overflow-x: hidden; width: 100%; }
 
     .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
     .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: floatOrb 14s ease-in-out infinite alternate; }
     .orb-1 { width: 420px; height: 420px; top: -80px; left: -60px; background: radial-gradient(circle, rgba(0, 245, 155, 0.45), transparent 70%); }
     .orb-2 { width: 460px; height: 460px; top: 18%; right: -100px; background: radial-gradient(circle, rgba(139, 92, 246, 0.45), transparent 70%); animation-delay: -5s; animation-duration: 18s; }
     .orb-3 { width: 400px; height: 400px; bottom: -80px; left: 35%; background: radial-gradient(circle, rgba(6, 182, 212, 0.35), transparent 70%); animation-delay: -9s; animation-duration: 16s; }
+    @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(35px, 28px) scale(1.08); } 100% { transform: translate(-25px, -20px) scale(0.96); } }
 
-    @keyframes floatOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(35px, 28px) scale(1.08); }
-      100% { transform: translate(-25px, -20px) scale(0.96); }
-    }
+    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
 
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-left: max(24px, env(safe-area-inset-left));
-      padding-right: max(24px, env(safe-area-inset-right));
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      background: rgba(6, 7, 11, 0.82);
-      border-bottom: 1px solid var(--border);
-    }
-
+    header { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: rgba(6, 7, 11, 0.82); border-bottom: 1px solid var(--border); }
     .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 70px; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.12rem; text-decoration: none; color: var(--text); white-space: nowrap; }
-    .brand-badge {
-      width: 36px; height: 32px; border-radius: 9px;
-      background: linear-gradient(135deg, var(--green), var(--green-bright));
-      color: #041008; display: grid; place-items: center;
-      font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.82rem;
-      box-shadow: 0 0 22px rgba(0, 245, 155, 0.35); transition: transform 0.25s ease; flex-shrink: 0;
-    }
+    .brand-badge { width: 36px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, var(--green), var(--green-bright)); color: #041008; display: grid; place-items: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.82rem; box-shadow: 0 0 22px rgba(0, 245, 155, 0.35); transition: transform 0.25s ease; flex-shrink: 0; }
     .brand:hover .brand-badge { transform: rotate(-6deg) scale(1.08); }
 
     .nav-links { display: flex; align-items: center; gap: 26px; }
@@ -85,26 +51,16 @@
     .nav-links a:hover::after { width: 100%; }
 
     .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .user-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green-bright); background: rgba(0, 245, 155, 0.08); border: 1px solid rgba(0, 245, 155, 0.25); padding: 7px 12px; border-radius: 10px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .menu-toggle {
-      display: none; align-items: center; justify-content: center;
-      width: 42px; height: 42px; border-radius: 11px;
-      border: 1px solid var(--border-strong); background: rgba(255, 255, 255, 0.05); color: var(--text); cursor: pointer; flex-shrink: 0;
-    }
-
+    .menu-toggle { display: none; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 11px; border: 1px solid var(--border-strong); background: rgba(255, 255, 255, 0.05); color: var(--text); cursor: pointer; flex-shrink: 0; }
     .mobile-menu { display: none; flex-direction: column; gap: 8px; padding: 12px 24px 18px; border-top: 1px solid var(--border); background: rgba(8, 10, 16, 0.96); }
     .mobile-menu.open { display: flex; animation: fadeUp 0.22s ease-out both; }
     .mobile-menu a.m-link { padding: 11px 12px; border-radius: 10px; color: var(--text); text-decoration: none; font-size: 0.95rem; font-weight: 600; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); }
     .mobile-menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 
-    .btn {
-      position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      min-height: 44px; border: 1px solid transparent; border-radius: 12px; padding: 11px 18px;
-      font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none;
-      transition: transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease, background 0.2s ease;
-    }
+    .btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border: 1px solid transparent; border-radius: 12px; padding: 11px 18px; font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease, background 0.2s ease; }
     .btn::before { content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent); transform: skewX(-22deg); transition: left 0.55s ease; }
-
     @media (hover: hover) {
       .btn:hover:not(:disabled)::before { left: 140%; }
       .btn-primary:hover:not(:disabled) { box-shadow: 0 10px 32px rgba(0, 245, 155, 0.42); transform: translateY(-2px); }
@@ -113,7 +69,6 @@
       .btn-amber:hover { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4); transform: translateY(-2px); }
       .btn-tg:hover { box-shadow: 0 10px 32px rgba(42, 171, 238, 0.48); transform: translateY(-2px); }
     }
-
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn:active:not(:disabled) { transform: scale(0.97); }
     .btn-primary { background: linear-gradient(135deg, var(--green), var(--green-bright)); color: #041108; box-shadow: 0 6px 24px rgba(0, 245, 155, 0.22); }
@@ -122,11 +77,7 @@
     .btn-amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #140d02; box-shadow: 0 6px 22px rgba(245, 158, 11, 0.22); }
     .btn-tg { background: linear-gradient(135deg, #229ed9, #2aabee); color: #fff; box-shadow: 0 8px 24px rgba(42, 171, 238, 0.28); }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(22px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
     .hero { padding: 52px 0 36px; text-align: center; }
     .hero .pill { animation: fadeUp 0.6s ease-out both; }
     .hero h1 { animation: fadeUp 0.7s ease-out 0.08s both; }
@@ -135,52 +86,33 @@
 
     .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(0, 245, 155, 0.1); border: 1px solid rgba(0, 245, 155, 0.28); color: var(--green-bright); font-size: 0.78rem; font-weight: 700; margin-bottom: 18px; max-width: 100%; }
     .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-bright); box-shadow: 0 0 10px var(--green-bright); animation: pulseDot 1.8s ease-in-out infinite; flex-shrink: 0; }
-
-    @keyframes pulseDot {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 245, 155, 0.7); }
-      50% { transform: scale(1.25); box-shadow: 0 0 0 8px rgba(0, 245, 155, 0); }
-    }
+    @keyframes pulseDot { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 245, 155, 0.7); } 50% { transform: scale(1.25); box-shadow: 0 0 0 8px rgba(0, 245, 155, 0); } }
 
     h1 { font-size: clamp(1.85rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; max-width: 840px; margin: 0 auto 14px; }
     .gradient-text { background: linear-gradient(90deg, #ffffff 0%, #00f59b 35%, #06b6d4 70%, #ffffff 100%); background-size: 220% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientShift 5s linear infinite; }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% center; }
-      100% { background-position: 220% center; }
-    }
-
+    @keyframes gradientShift { 0% { background-position: 0% center; } 100% { background-position: 220% center; } }
     .hero-sub { color: var(--muted); font-size: clamp(0.92rem, 2.2vw, 1.02rem); max-width: 650px; margin: 0 auto 28px; }
 
-    .optimizer-panel {
-      max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border-strong);
-      border-radius: 22px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55); text-align: left;
-    }
-
+    .optimizer-panel { max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border-strong); border-radius: 22px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55); text-align: left; }
     .engine-status { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green-bright); }
 
-    .vip-bar {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); margin-bottom: 16px;
-    }
+    .vip-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); margin-bottom: 16px; }
     .vip-bar.creator-active { background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.5); }
     .vip-bar.vip-active { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.45); }
-
     .quota-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; color: #e2e8f0; }
     .vip-bar.creator-active .quota-badge { color: #ddd6fe; }
     .vip-bar.vip-active .quota-badge { color: #fcd34d; }
 
     .vip-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .vip-input {
-      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-strong); border-radius: 10px;
-      padding: 9px 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
-      min-height: 40px; width: 185px; outline: none;
-    }
+    .vip-input { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-strong); border-radius: 10px; padding: 9px 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; min-height: 40px; width: 185px; outline: none; }
     .vip-input:focus { border-color: var(--amber); }
     .vip-btn { min-height: 40px; padding: 8px 14px; font-size: 0.82rem; }
     .vip-msg { width: 100%; font-size: 0.78rem; color: #fca5a5; display: none; }
     .vip-msg.visible { display: block; }
     .vip-msg.ok { color: var(--green-bright); }
+
+    .auth-gate { padding: 26px 20px; border-radius: 16px; background: rgba(0, 245, 155, 0.04); border: 1px dashed rgba(0, 245, 155, 0.3); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .auth-gate p { color: var(--muted); font-size: 0.92rem; max-width: 460px; }
 
     .mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
     .mode-btn { text-align: left; min-height: 58px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--muted); cursor: pointer; font-family: inherit; transition: transform 0.18s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease; }
@@ -219,21 +151,17 @@
     .section-header { text-align: center; margin-bottom: 40px; }
     .section-header h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 8px; }
     .section-header p { color: var(--muted); font-size: clamp(0.9rem, 2vw, 1rem); }
-
     .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1); }
     .reveal.in-view { opacity: 1; transform: translateY(0); }
 
     .tiers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
     .tier-card { position: relative; display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border); border-radius: 22px; padding: 26px; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease; }
-    @media (hover: hover) {
-      .tier-card:hover { transform: translateY(-6px); border-color: var(--border-strong); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); }
-      .tier-card:hover .spec-box { border-color: rgba(255, 255, 255, 0.14); }
-    }
+    @media (hover: hover) { .tier-card:hover { transform: translateY(-6px); border-color: var(--border-strong); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); } }
     .tier-card.recommended { border-color: rgba(139, 92, 246, 0.65); background: linear-gradient(180deg, rgba(139, 92, 246, 0.12) 0%, rgba(16, 20, 29, 0.92) 45%); }
     .tier-card.premium { border-color: rgba(245, 158, 11, 0.55); background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, rgba(16, 20, 29, 0.92) 45%); }
 
-    .rec-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; white-space: nowrap; box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4); }
-    .tier-card.premium .rec-badge { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #140d02; box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35); }
+    .rec-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; white-space: nowrap; }
+    .tier-card.premium .rec-badge { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #140d02; }
     .tier-tag-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .tier-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
     .free-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0, 245, 155, 0.12); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
@@ -242,7 +170,7 @@
     .tier-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
     .tier-sub { font-size: 0.86rem; color: var(--muted); margin-bottom: 18px; }
     .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-    .spec-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 11px; transition: border-color 0.2s; }
+    .spec-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 11px; }
     .spec-val { font-family: 'JetBrains Mono', monospace; font-size: 0.98rem; font-weight: 700; }
     .spec-lbl { font-size: 0.72rem; color: var(--muted); }
     .engine-box { display: flex; justify-content: space-between; padding: 11px 14px; border-radius: 12px; background: rgba(0, 245, 155, 0.06); border: 1px solid rgba(0, 245, 155, 0.2); margin-bottom: 16px; font-size: 0.85rem; }
@@ -253,43 +181,47 @@
     .software-list { list-style: none; font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 5px; }
 
     .support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 960px; margin: 0 auto; align-items: stretch; }
-    .support-card { position: relative; background: var(--card); border: 1px solid var(--border-strong); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease; }
-
-    @media (hover: hover) {
-      .support-card:hover { transform: translateY(-5px); }
-      .support-card.tg-card:hover { border-color: rgba(42, 171, 238, 0.55); box-shadow: 0 20px 50px rgba(42, 171, 238, 0.14); }
-      .support-card.aba-card:hover { border-color: rgba(239, 68, 68, 0.55); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.14); }
-      .support-card.aba-card:hover .qr-frame { transform: scale(1.03); box-shadow: 0 22px 54px rgba(239, 68, 68, 0.22); }
-    }
-
+    .support-card { position: relative; background: var(--card); border: 1px solid var(--border-strong); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease; }
+    @media (hover: hover) { .support-card:hover { transform: translateY(-5px); } }
     .support-card.tg-card { background: linear-gradient(180deg, rgba(42, 171, 238, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(42, 171, 238, 0.28); }
     .support-card.aba-card { background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(239, 68, 68, 0.28); }
     .support-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; padding: 4px 11px; border-radius: 999px; margin-bottom: 10px; }
     .tag-tg { background: rgba(42, 171, 238, 0.14); color: #67c7f5; border: 1px solid rgba(42, 171, 238, 0.35); }
     .tag-aba { background: rgba(239, 68, 68, 0.14); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
-    .support-card h3 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .support-card h3 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; }
     .support-card p { color: var(--muted); font-size: 0.92rem; }
     .support-perks { background: rgba(0, 0, 0, 0.26); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; list-style: none; font-size: 0.88rem; color: #dbe2ee; }
     .support-perks li { display: flex; align-items: center; gap: 10px; }
     .perk-dot { width: 20px; height: 20px; border-radius: 50%; background: rgba(42, 171, 238, 0.16); color: #67c7f5; display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
     .support-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
-
     .aba-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(0, 0, 0, 0.34); border: 1px solid var(--border-strong); border-radius: 14px; padding: 13px 16px; flex-wrap: wrap; }
     .aba-label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
     .aba-num { font-family: 'JetBrains Mono', monospace; font-size: clamp(0.95rem, 3.2vw, 1.12rem); font-weight: 800; color: var(--text); margin-top: 2px; word-break: break-all; }
-
     .qr-section { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 2px; }
-    .qr-frame { width: 100%; max-width: 225px; border-radius: 18px; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); background: #ffffff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .qr-frame { width: 100%; max-width: 225px; border-radius: 18px; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); background: #ffffff; }
     .qr-img { width: 100%; height: auto; display: block; }
-    .qr-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; text-align: center; }
+    .qr-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; }
     .qr-fallback { display: none; color: #0f172a; font-size: 0.8rem; text-align: center; padding: 24px 12px; font-weight: 600; }
 
-    footer { border-top: 1px solid var(--border); padding: 28px 0 calc(28px + env(safe-area-inset-bottom)); text-align: center; color: var(--dim); font-size: 0.84rem; }
+    /* Auth Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 18px; z-index: 120; }
+    .modal-backdrop.open { display: flex; animation: fadeUp 0.2s ease-out both; }
+    .auth-modal { width: 100%; max-width: 420px; background: #0f131d; border: 1px solid var(--border-strong); border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75); }
+    .auth-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .auth-close { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 4px; border-radius: 12px; margin-bottom: 16px; }
+    .auth-tab { border: none; background: transparent; color: var(--muted); font-family: inherit; font-weight: 600; font-size: 0.88rem; padding: 9px; border-radius: 9px; cursor: pointer; }
+    .auth-tab.active { background: rgba(0, 245, 155, 0.16); color: var(--green-bright); }
+    .auth-field { margin-bottom: 12px; }
+    .auth-field label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; }
+    .auth-field input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-strong); border-radius: 11px; padding: 11px 13px; color: var(--text); font-family: inherit; font-size: 0.92rem; outline: none; }
+    .auth-field input:focus { border-color: var(--green-bright); }
+    .auth-msg { font-size: 0.82rem; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; display: none; }
+    .auth-msg.visible { display: block; }
+    .auth-msg.err { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
+    .auth-msg.ok { background: rgba(0, 245, 155, 0.1); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-      .reveal { opacity: 1; transform: none; }
-    }
+    footer { border-top: 1px solid var(--border); padding: 28px 0 calc(28px + env(safe-area-inset-bottom)); text-align: center; color: var(--dim); font-size: 0.84rem; }
 
     @media (max-width: 1024px) {
       .nav-links { display: none; }
@@ -303,17 +235,13 @@
     @media (max-width: 767px) {
       .container { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
       .nav { height: 64px; }
-      .nav-actions .btn-secondary { display: none; }
-      .nav-actions .btn-tg { padding: 9px 14px; font-size: 0.84rem; min-height: 40px; }
+      .nav-actions .btn-tg, .nav-actions .user-pill { display: none; }
       .hero { padding: 36px 0 24px; }
-      .pill { font-size: 0.72rem; padding: 5px 12px; }
       .optimizer-panel { padding: 16px; border-radius: 18px; }
       .dropzone { padding: 26px 14px; }
       .section { padding: 44px 0; }
-      .section-header { margin-bottom: 28px; }
-      .tiers-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
+      .tiers-grid, .support-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
       .tiers-grid .tier-card:last-child { grid-column: auto; max-width: none; }
-      .support-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
       .support-card { padding: 20px; border-radius: 18px; }
       .tier-card { padding: 22px; border-radius: 18px; }
       .vip-form { width: 100%; }
@@ -325,7 +253,6 @@
       .mode-grid { grid-template-columns: 1fr; }
       .meta-grid { grid-template-columns: 1fr 1fr; }
       .qr-frame { max-width: 200px; }
-      .aba-box { padding: 12px; }
     }
   </style>
 </head>
@@ -349,13 +276,12 @@
         <a href="#support">VIP Key &amp; Donate</a>
       </nav>
       <div class="nav-actions">
-        <a href="#support" class="btn btn-secondary">Get VIP Key</a>
+        <span class="user-pill" id="navUserPill" style="display:none;"></span>
+        <button type="button" class="btn btn-primary" id="navAuthBtn" onclick="handleNavAuth()">Login</button>
         <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
         <button type="button" class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
       </div>
@@ -366,7 +292,7 @@
       <a href="#tiers" class="m-link">Plans &amp; Limits</a>
       <a href="#support" class="m-link">VIP Key &amp; Donate</a>
       <div class="mobile-menu-actions">
-        <a href="#support" class="btn btn-secondary">Donate ABA</a>
+        <button type="button" class="btn btn-primary" id="mobileAuthBtn" onclick="handleNavAuth()">Login</button>
         <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
       </div>
     </div>
@@ -377,79 +303,84 @@
       <div class="container">
         <div class="pill">
           <span class="pill-dot"></span>
-          NHA ENGINE 2.0 • FREE 250MB • CREATOR 600MB • VIP UNLIMITED
+          NHA ENGINE 2.0 • ACCOUNT PROTECTED • 1 KEY = 1 ACCOUNT
         </div>
         <h1>Optimize Videos For <span class="gradient-text">TikTok 1080p 60FPS</span></h1>
         <p class="hero-sub">
-          Free users get up to 250 MB &amp; 5/day. Unlock Creator (600 MB) or VIP (Unlimited) with a Key!
+          Sign in for Free (250 MB • 5/day), or redeem a Creator (600 MB) / VIP (Unlimited) Key locked to your account.
         </p>
 
         <div class="optimizer-panel">
           <div class="engine-status">
             <span id="engineBadge">● Checking Nha Engine 2.0...</span>
-            <span id="limitSummary">Free: 250 MB max • 5/day</span>
+            <span id="limitSummary">Please log in</span>
           </div>
 
-          <div class="vip-bar" id="vipBar">
-            <div class="quota-badge" id="quotaBadge">Uploads left today: 5 / 5 • Max 250 MB</div>
-            <form class="vip-form" id="vipForm">
-              <input type="password" class="vip-input" id="vipInput" placeholder="Creator / VIP Key..." autocomplete="off" />
-              <button type="submit" class="btn btn-amber vip-btn" id="vipBtn">Unlock Key</button>
-              <a href="#support" class="btn btn-secondary vip-btn">Get VIP Key</a>
-            </form>
-            <div class="vip-msg" id="vipMsg"></div>
+          <div class="auth-gate" id="authGate">
+            <p>Log in or create a free account to optimize videos and link your Creator / VIP Key.</p>
+            <button type="button" class="btn btn-primary" onclick="openAuthModal('login')">Login / Create Free Account</button>
           </div>
 
-          <div class="mode-grid" id="modeGrid">
-            <button type="button" class="mode-btn active" data-mode="tiktok60">
-              <div class="mode-title">TikTok 1080p 60 FPS</div>
-              <div class="mode-desc">FFmpeg • H.264 14M</div>
-            </button>
-            <button type="button" class="mode-btn" data-mode="faststart">
-              <div class="mode-title">Lossless Faststart</div>
-              <div class="mode-desc">Instant • 0 quality loss</div>
-            </button>
-            <button type="button" class="mode-btn" data-mode="fhd120">
-              <div class="mode-title">Full HD 120 FPS</div>
-              <div class="mode-desc">FFmpeg • 1920x1080 120FPS</div>
-            </button>
-            <button type="button" class="mode-btn" data-mode="patch60">
-              <div class="mode-title">60 FPS Trick (2x)</div>
-              <div class="mode-desc">Container timestamp 2x</div>
-            </button>
-          </div>
-
-          <div class="dropzone" id="dropzone">
-            <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/*" />
-            <div class="dropzone-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <h3>Drop your MP4 / MOV video here</h3>
-            <p>Or tap to choose a file — Free: 250 MB • Creator: 600 MB • VIP: Unlimited</p>
-          </div>
-
-          <div class="file-box" id="fileBox">
-            <div class="meta-grid">
-              <div class="meta-item"><div class="meta-label">File Name</div><div class="meta-val" id="metaName">—</div></div>
-              <div class="meta-item"><div class="meta-label">Size</div><div class="meta-val" id="metaSize">—</div></div>
-              <div class="meta-item"><div class="meta-label">Resolution</div><div class="meta-val" id="metaRes">—</div></div>
-              <div class="meta-item"><div class="meta-label">Selected Mode</div><div class="meta-val" id="metaMode">tiktok60</div></div>
+          <div id="appWorkspace" style="display:none;">
+            <div class="vip-bar" id="vipBar">
+              <div class="quota-badge" id="quotaBadge">Loading account...</div>
+              <form class="vip-form" id="vipForm">
+                <input type="text" class="vip-input" id="vipInput" placeholder="Creator / VIP Key..." autocomplete="off" />
+                <button type="submit" class="btn btn-amber vip-btn" id="vipBtn">Unlock Key</button>
+                <a href="#support" class="btn btn-secondary vip-btn">Get VIP Key</a>
+              </form>
+              <div class="vip-msg" id="vipMsg"></div>
             </div>
 
-            <button class="btn btn-primary" id="optimizeBtn" style="width: 100%;">
-              Optimize &amp; Download MP4
-            </button>
-
-            <div class="progress-wrap" id="progressWrap">
-              <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
-              <div class="log-line" id="logLine">Ready...</div>
+            <div class="mode-grid" id="modeGrid">
+              <button type="button" class="mode-btn active" data-mode="tiktok60">
+                <div class="mode-title">TikTok 1080p 60 FPS</div>
+                <div class="mode-desc">FFmpeg • H.264 14M</div>
+              </button>
+              <button type="button" class="mode-btn" data-mode="faststart">
+                <div class="mode-title">Lossless Faststart</div>
+                <div class="mode-desc">Instant • 0 quality loss</div>
+              </button>
+              <button type="button" class="mode-btn" data-mode="fhd120">
+                <div class="mode-title">Full HD 120 FPS</div>
+                <div class="mode-desc">FFmpeg • 1920x1080 120FPS</div>
+              </button>
+              <button type="button" class="mode-btn" data-mode="patch60">
+                <div class="mode-title">60 FPS Trick (2x)</div>
+                <div class="mode-desc">Container timestamp 2x</div>
+              </button>
             </div>
 
-            <div class="result-box" id="resultBox"></div>
+            <div class="dropzone" id="dropzone">
+              <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/*" />
+              <div class="dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <h3>Drop your MP4 / MOV video here</h3>
+              <p>Or tap to choose a file — Free: 250 MB • Creator: 600 MB • VIP: Unlimited</p>
+            </div>
+
+            <div class="file-box" id="fileBox">
+              <div class="meta-grid">
+                <div class="meta-item"><div class="meta-label">File Name</div><div class="meta-val" id="metaName">—</div></div>
+                <div class="meta-item"><div class="meta-label">Size</div><div class="meta-val" id="metaSize">—</div></div>
+                <div class="meta-item"><div class="meta-label">Resolution</div><div class="meta-val" id="metaRes">—</div></div>
+                <div class="meta-item"><div class="meta-label">Selected Mode</div><div class="meta-val" id="metaMode">tiktok60</div></div>
+              </div>
+
+              <button class="btn btn-primary" id="optimizeBtn" style="width: 100%;">
+                Optimize &amp; Download MP4
+              </button>
+
+              <div class="progress-wrap" id="progressWrap">
+                <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="log-line" id="logLine">Ready...</div>
+              </div>
+
+              <div class="result-box" id="resultBox"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -466,7 +397,7 @@
           <article class="tier-card reveal" style="transition-delay: 0.05s;">
             <div class="tier-tag-row"><span class="tier-tag">MEMBER</span><span class="free-pill">$0 • FREE</span></div>
             <div class="tier-title">Free</div>
-            <div class="tier-sub">Open access for everyone</div>
+            <div class="tier-sub">Free account included</div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">250 MB</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
@@ -490,7 +421,7 @@
             <div class="rec-badge">Key Required • Best for TikTok</div>
             <div class="tier-tag-row"><span class="tier-tag">CREATOR</span><span class="creator-pill">VIP KEY</span></div>
             <div class="tier-title">Creator</div>
-            <div class="tier-sub">Unlock 600 MB with Key</div>
+            <div class="tier-sub">15 Days or Lifetime Key</div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">600 MB</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">1080p</div><div class="spec-lbl">TikTok target</div></div>
@@ -499,7 +430,7 @@
             </div>
             <div class="engine-box"><span>Nha Engine</span><strong>2.0 + Creator</strong></div>
             <ul class="feature-list">
-              <li>TikTok 1080p 60 FPS</li><li>Up to 600 MB files</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+              <li>TikTok 1080p 60 FPS</li><li>Up to 600 MB files</li><li>1 Key = 1 Account</li><li>Topaz &amp; Handbrake preset</li><li>Colour correction preset</li>
             </ul>
             <div class="software-box">
               <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
@@ -514,7 +445,7 @@
             <div class="rec-badge">VIP Key • Unlimited</div>
             <div class="tier-tag-row"><span class="tier-tag">VIP UNLOCK</span><span class="vip-pill">KEY REQUIRED</span></div>
             <div class="tier-title">VIP</div>
-            <div class="tier-sub">Donate ABA or contact @ZenZyTwenty4</div>
+            <div class="tier-sub">30 Days or Lifetime Key</div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
@@ -523,7 +454,7 @@
             </div>
             <div class="engine-box"><span>Nha Engine</span><strong>2.0 + VIP</strong></div>
             <ul class="feature-list">
-              <li>No file size limit</li><li>No daily limit</li><li>Full HD 120 FPS</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+              <li>No file size limit</li><li>No daily limit</li><li>1 Key = 1 Account</li><li>Full HD 120 FPS</li><li>All creator presets</li>
             </ul>
             <div class="software-box">
               <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
@@ -551,23 +482,17 @@
               <h3>Telegram Support &amp; VIP Key</h3>
               <p>Message directly on Telegram for your Creator/VIP Key, custom presets, or help.</p>
             </div>
-
             <ul class="support-perks">
               <li><span class="perk-dot">✓</span> Get Key to unlock 600 MB or Unlimited</li>
               <li><span class="perk-dot">✓</span> TikTok 1080p 60FPS &amp; 4K export settings</li>
               <li><span class="perk-dot">✓</span> Topaz, Handbrake &amp; color grading presets</li>
               <li><span class="perk-dot">✓</span> Direct contact &amp; bug reports</li>
             </ul>
-
             <div class="support-bottom">
               <div class="aba-box">
-                <div>
-                  <div class="aba-label">Telegram Username</div>
-                  <div class="aba-num">@ZenZyTwenty4</div>
-                </div>
+                <div><div class="aba-label">Telegram Username</div><div class="aba-num">@ZenZyTwenty4</div></div>
                 <button type="button" class="btn btn-secondary" onclick="copyText('@ZenZyTwenty4', this)">Copy</button>
               </div>
-
               <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg" style="width: 100%;">
                 Message @ZenZyTwenty4 on Telegram
               </a>
@@ -580,26 +505,15 @@
               <h3>Support Nha Engine 2.0</h3>
               <p>Scan the ABA KHQR below or copy the account number, then send receipt to @ZenZyTwenty4 for your Key.</p>
             </div>
-
             <div class="aba-box">
-              <div>
-                <div class="aba-label">ABA Account (PANHA SAREAM)</div>
-                <div class="aba-num">015 262 971</div>
-              </div>
+              <div><div class="aba-label">ABA Account (PANHA SAREAM)</div><div class="aba-num">015 262 971</div></div>
               <button type="button" class="btn btn-secondary" onclick="copyText('015262971', this)">Copy</button>
             </div>
-
             <div class="qr-section">
               <div class="qr-frame">
-                <img
-                  src="/aba-qr.jpg"
-                  alt="ABA KHQR - PANHA SAREAM"
-                  class="qr-img"
-                  onerror="if(!this.dataset.triedPng){this.dataset.triedPng='1';this.src='/aba-qr.png';}else{this.style.display='none';document.getElementById('qrFallback').style.display='block';}"
-                />
-                <div id="qrFallback" class="qr-fallback">
-                  Save your QR image as<br><code>public/aba-qr.jpg</code> (or <code>.png</code>)
-                </div>
+                <img src="/aba-qr.jpg" alt="ABA KHQR - PANHA SAREAM" class="qr-img"
+                  onerror="if(!this.dataset.triedPng){this.dataset.triedPng='1';this.src='/aba-qr.png';}else{this.style.display='none';document.getElementById('qrFallback').style.display='block';}" />
+                <div id="qrFallback" class="qr-fallback">Save your QR image as<br><code>public/aba-qr.jpg</code> (or <code>.png</code>)</div>
               </div>
               <span class="qr-caption">Scan with ABA Mobile / KHQR</span>
             </div>
@@ -615,58 +529,66 @@
     </div>
   </footer>
 
+  <!-- Auth Modal -->
+  <div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true">
+    <div class="auth-modal">
+      <div class="auth-head">
+        <h3 id="authTitle">Login to Nha Engine</h3>
+        <button type="button" class="auth-close" onclick="closeAuthModal()">&times;</button>
+      </div>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
+        <button type="button" class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+      <div class="auth-msg" id="authMsg"></div>
+      <form id="authForm">
+        <div class="auth-field">
+          <label for="authEmail">Email</label>
+          <input type="email" id="authEmail" required placeholder="you@example.com" />
+        </div>
+        <div class="auth-field">
+          <label for="authPassword">Password (min 6 characters)</label>
+          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary" id="authSubmitBtn" style="width:100%;">Login</button>
+      </form>
+    </div>
+  </div>
+
   <script>
-    const PLANS = {
-      free: { name: 'Free', maxMB: 250, dailyLimit: 5 },
-      creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
-      vip: { name: 'VIP', maxMB: Infinity, dailyLimit: Infinity }
-    };
+    // ====== PUT YOUR SUPABASE PROJECT URL & ANON KEY HERE ======
+    const SUPABASE_URL = 'https://omrklwwgmbvlgmdfhbot.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_vamrbGtPSLckDQwKio7tqw_TctCPc0n';
+    // ===========================================================
 
-    function parseRule(specStr) {
-      const spec = (specStr || '').trim();
-      if (!spec || spec.toLowerCase() === 'lifetime') return { type: 'lifetime' };
-      if (/^\d+d$/i.test(spec)) {
-        const days = Number(spec.slice(0, -1));
-        return { type: 'duration', days, ms: days * 86400 * 1000 };
-      }
-      if (/^\d{4}-\d{2}-\d{2}$/.test(spec)) return { type: 'date', date: spec };
-      return { type: 'lifetime' };
-    }
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function buildKeyMap(arr) {
-      const map = new Map();
-      for (const item of arr) {
-        const [k, spec] = item.split('@');
-        if (k) map.set(k.trim(), parseRule(spec));
-      }
-      return map;
-    }
-
-    const FALLBACK_CREATOR_MAP = buildKeyMap([
-      'NHA-CR-4K9M2P@15d', 'NHA-CR-7X3W8Q@15d', 'NHA-CR-2R6N5T@15d', 'NHA-CR-9H4V3Z@15d', 'NHA-CR-5D8J7B@15d',
-      'NHA-CR-3F2Y6C@15d', 'NHA-CR-8P5G4W@15d', 'NHA-CR-6T9K3M@15d', 'NHA-CR-4N7R8H@15d', 'NHA-CR-2Q5X9D@15d',
-      'NHA-CR-7W3B6F', 'NHA-CR-9M8C4P', 'NHA-CR-5K2Z7V', 'NHA-CR-3J6H9N', 'NHA-CR-8G4T2R',
-      'NHA-CR-6V9D5X', 'NHA-CR-4B3Q8K', 'NHA-CR-7Y5P2W', 'NHA-CR-9C6M3J', 'NHA-CR-2Z8F4G'
-    ]);
-
-    const FALLBACK_VIP_MAP = buildKeyMap([
-      'NHA-VP-8K4M9R@30d', 'NHA-VP-3W7X2P@30d', 'NHA-VP-6N5Q8T@30d', 'NHA-VP-9Z2H4F@30d', 'NHA-VP-5C8B7D@30d',
-      'NHA-VP-4R6J3M@30d', 'NHA-VP-7T9V5K@30d', 'NHA-VP-2P3G8W@30d', 'NHA-VP-8F5D6Y@30d', 'NHA-VP-6M2K9N@30d',
-      'NHA-VP-3X7C4Q', 'NHA-VP-9B8R2H', 'NHA-VP-5W4P7Z', 'NHA-VP-4H9T6G', 'NHA-VP-7J3N8V',
-      'NHA-VP-2D6F5B', 'NHA-VP-8Q5Y3K', 'NHA-VP-6K9W4M', 'NHA-VP-3G2Z7R', 'NHA-VP-9V8J5X'
-    ]);
-
+    let currentUser = null;
+    let currentSession = null;
+    let currentProfile = null;
     let selectedMode = 'tiktok60';
     let selectedFile = null;
     let lastBlobUrl = null;
     let hasBackend = false;
-    let vipKey = localStorage.getItem('nha_vip_key') || '';
-    let currentPlan = 'free';
-    let currentTimeLabel = 'Lifetime';
-    let serverRemaining = null;
+    let authMode = 'login';
 
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenu = document.getElementById('mobileMenu');
+    const navUserPill = document.getElementById('navUserPill');
+    const navAuthBtn = document.getElementById('navAuthBtn');
+    const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+    const authGate = document.getElementById('authGate');
+    const appWorkspace = document.getElementById('appWorkspace');
+    const authModal = document.getElementById('authModal');
+    const authTitle = document.getElementById('authTitle');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabSignup = document.getElementById('tabSignup');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authMsg = document.getElementById('authMsg');
+
     const modeButtons = document.querySelectorAll('.mode-btn');
     const dropzone = document.getElementById('dropzone');
     const videoInput = document.getElementById('videoInput');
@@ -686,14 +608,12 @@
     const quotaBadge = document.getElementById('quotaBadge');
     const vipForm = document.getElementById('vipForm');
     const vipInput = document.getElementById('vipInput');
-    const vipBtn = document.getElementById('vipBtn');
     const vipMsg = document.getElementById('vipMsg');
 
     menuToggle.addEventListener('click', () => {
       const isOpen = mobileMenu.classList.toggle('open');
       menuToggle.setAttribute('aria-expanded', String(isOpen));
     });
-
     mobileMenu.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         mobileMenu.classList.remove('open');
@@ -705,10 +625,7 @@
     if ('IntersectionObserver' in window) {
       const obs = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            obs.unobserve(entry.target);
-          }
+          if (entry.isIntersecting) { entry.target.classList.add('in-view'); obs.unobserve(entry.target); }
         });
       }, { threshold: 0.08 });
       revealEls.forEach(el => obs.observe(el));
@@ -724,13 +641,68 @@
       });
     }
 
-    function getTodayKey() {
-      return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+    function openAuthModal(mode = 'login') {
+      switchAuthTab(mode);
+      authMsg.className = 'auth-msg';
+      authModal.classList.add('open');
     }
 
-    function formatRemaining(expiresAtMs) {
-      if (!expiresAtMs) return 'Lifetime';
-      const diff = expiresAtMs - Date.now();
+    function closeAuthModal() {
+      authModal.classList.remove('open');
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode;
+      tabLogin.classList.toggle('active', mode === 'login');
+      tabSignup.classList.toggle('active', mode === 'signup');
+      authTitle.textContent = mode === 'login' ? 'Login to Nha Engine' : 'Create Free Account';
+      authSubmitBtn.textContent = mode === 'login' ? 'Login' : 'Create Free Account';
+    }
+
+    async function handleNavAuth() {
+      if (currentUser) {
+        await sb.auth.signOut();
+      } else {
+        openAuthModal('login');
+      }
+    }
+
+    function showAuthMsg(text, ok = false) {
+      authMsg.textContent = text;
+      authMsg.className = ok ? 'auth-msg visible ok' : 'auth-msg visible err';
+    }
+
+    authForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      authSubmitBtn.disabled = true;
+      authMsg.className = 'auth-msg';
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+
+      try {
+        if (authMode === 'signup') {
+          const { data, error } = await sb.auth.signUp({ email, password });
+          if (error) throw error;
+          if (!data.session) {
+            showAuthMsg('Account created! Please check your email to confirm, then log in.', true);
+          } else {
+            closeAuthModal();
+          }
+        } else {
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          closeAuthModal();
+        }
+      } catch (err) {
+        showAuthMsg(err.message || 'Authentication error.');
+      } finally {
+        authSubmitBtn.disabled = false;
+      }
+    });
+
+    function formatRemaining(isoStr) {
+      if (!isoStr) return 'Lifetime';
+      const diff = Date.parse(isoStr) - Date.now();
       if (diff <= 0) return 'Expired';
       const totalMins = Math.floor(diff / 60000);
       const days = Math.floor(totalMins / 1440);
@@ -741,81 +713,56 @@
       return `${Math.max(1, mins)}m left`;
     }
 
-    function checkLocalKey(keyStr) {
-      const key = (keyStr || '').trim();
-      let plan = null, rule = null;
-      if (FALLBACK_VIP_MAP.has(key)) { plan = 'vip'; rule = FALLBACK_VIP_MAP.get(key); }
-      else if (FALLBACK_CREATOR_MAP.has(key)) { plan = 'creator'; rule = FALLBACK_CREATOR_MAP.get(key); }
-      if (!plan) return { plan: 'free', expired: false, label: null };
-
-      if (rule.type === 'lifetime') return { plan, expired: false, label: 'Lifetime' };
-
-      if (rule.type === 'date') {
-        const endMs = Date.parse(`${rule.date}T23:59:59+07:00`);
-        if (Date.now() > endMs) return { plan: 'free', expired: true, label: 'Expired' };
-        return { plan, expired: false, label: formatRemaining(endMs) };
+    function refreshAccountUI() {
+      if (!currentUser || !currentProfile) {
+        navUserPill.style.display = 'none';
+        navAuthBtn.textContent = 'Login';
+        navAuthBtn.className = 'btn btn-primary';
+        mobileAuthBtn.textContent = 'Login';
+        authGate.style.display = 'flex';
+        appWorkspace.style.display = 'none';
+        limitSummary.textContent = 'Please log in';
+        return;
       }
 
-      let acts = {};
-      try { acts = JSON.parse(localStorage.getItem('nha_key_activations') || '{}'); } catch {}
-      if (!acts[key]) {
-        acts[key] = Date.now();
-        localStorage.setItem('nha_key_activations', JSON.stringify(acts));
-      }
-      const endMs = acts[key] + rule.ms;
-      if (Date.now() > endMs) return { plan: 'free', expired: true, label: 'Expired' };
-      return { plan, expired: false, label: formatRemaining(endMs) };
-    }
+      navUserPill.textContent = currentProfile.email || currentUser.email;
+      navUserPill.style.display = '';
+      navAuthBtn.textContent = 'Logout';
+      navAuthBtn.className = 'btn btn-secondary';
+      mobileAuthBtn.textContent = 'Logout';
+      authGate.style.display = 'none';
+      appWorkspace.style.display = 'block';
 
-    function getLocalQuota() {
-      const today = getTodayKey();
-      try {
-        const raw = JSON.parse(localStorage.getItem('nha_quota') || '{}');
-        if (raw.date === today && typeof raw.count === 'number') return raw;
-      } catch {}
-      return { date: today, count: 0 };
-    }
-
-    function incrementLocalQuota() {
-      const q = getLocalQuota();
-      q.count += 1;
-      localStorage.setItem('nha_quota', JSON.stringify(q));
-      return q;
-    }
-
-    function getRemainingToday() {
-      const limit = PLANS[currentPlan].dailyLimit;
-      if (limit === Infinity) return Infinity;
-      const localRem = Math.max(0, limit - getLocalQuota().count);
-      if (hasBackend && typeof serverRemaining === 'number') {
-        return Math.min(localRem, serverRemaining);
-      }
-      return localRem;
-    }
-
-    function refreshQuotaUI() {
       vipBar.classList.remove('vip-active', 'creator-active');
-      const label = currentTimeLabel || 'Lifetime';
-      if (currentPlan === 'vip') {
+      const plan = currentProfile.plan || 'free';
+      const label = formatRemaining(currentProfile.expires_at);
+
+      if (plan === 'vip') {
         vipBar.classList.add('vip-active');
         quotaBadge.textContent = `★ VIP UNLOCKED: Unlimited • ${label}`;
         limitSummary.textContent = `VIP (${label})`;
-        vipInput.style.display = 'none';
-        vipBtn.textContent = 'Remove Key';
-      } else if (currentPlan === 'creator') {
+      } else if (plan === 'creator') {
         vipBar.classList.add('creator-active');
-        const rem = getRemainingToday();
-        quotaBadge.textContent = `★ CREATOR (${label}): ${rem} / ${PLANS.creator.dailyLimit} left • Max ${PLANS.creator.maxMB} MB`;
-        limitSummary.textContent = `Creator (${label}): ${PLANS.creator.maxMB} MB`;
-        vipInput.style.display = 'none';
-        vipBtn.textContent = 'Remove Key';
+        quotaBadge.textContent = `★ CREATOR (${label}): ${currentProfile.remaining} / ${currentProfile.daily_limit} left • Max ${currentProfile.max_mb} MB`;
+        limitSummary.textContent = `Creator (${label}): ${currentProfile.max_mb} MB`;
       } else {
-        const rem = getRemainingToday();
-        quotaBadge.textContent = `Uploads left today: ${rem} / ${PLANS.free.dailyLimit} • Max ${PLANS.free.maxMB} MB`;
-        limitSummary.textContent = `Free: ${PLANS.free.maxMB} MB max • ${PLANS.free.dailyLimit}/day`;
-        vipInput.style.display = '';
-        vipBtn.textContent = 'Unlock Key';
+        quotaBadge.textContent = `Uploads left today: ${currentProfile.remaining} / ${currentProfile.daily_limit} • Max ${currentProfile.max_mb} MB`;
+        limitSummary.textContent = `Free: ${currentProfile.max_mb} MB max • ${currentProfile.daily_limit}/day`;
       }
+    }
+
+    async function loadProfile() {
+      if (!currentUser) {
+        currentProfile = null;
+        refreshAccountUI();
+        return;
+      }
+      const { data, error } = await sb.rpc('get_my_profile');
+      if (!error && data) {
+        currentProfile = data;
+        if (data.expired) showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 to renew.', false);
+      }
+      refreshAccountUI();
     }
 
     function showVipMsg(text, ok = false) {
@@ -826,66 +773,24 @@
 
     vipForm.addEventListener('submit', async e => {
       e.preventDefault();
-      if (currentPlan !== 'free') {
-        currentPlan = 'free';
-        currentTimeLabel = null;
-        vipKey = '';
-        localStorage.removeItem('nha_vip_key');
-        vipInput.value = '';
-        refreshQuotaUI();
-        showVipMsg('Key removed. Switched back to Free (250 MB).', false);
+      if (!currentUser) return openAuthModal('login');
+      const code = vipInput.value.trim();
+      if (!code) return showVipMsg('Please enter your Creator or VIP Key.', false);
+
+      const { data, error } = await sb.rpc('redeem_license_key', { p_code: code });
+      if (error || !data?.ok) {
+        showVipMsg(data?.error || error?.message || 'Invalid Key.', false);
         return;
       }
+      vipInput.value = '';
+      await loadProfile();
+      showVipMsg(`${data.plan.toUpperCase()} Key activated and locked to your account!`, true);
+    });
 
-      const entered = vipInput.value.trim();
-      if (!entered) {
-        showVipMsg('Please enter your Creator or VIP Key first.', false);
-        return;
-      }
-
-      if (hasBackend) {
-        try {
-          const r = await fetch('/api/vip/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key: entered })
-          });
-          const data = await r.json();
-          if (r.ok && data.valid) {
-            currentPlan = data.plan || 'vip';
-            currentTimeLabel = data.timeLabel || 'Lifetime';
-            vipKey = entered;
-            localStorage.setItem('nha_vip_key', entered);
-            try {
-              const hr = await fetch('/api/health', { headers: { 'x-vip-key': entered } });
-              const hd = await hr.json();
-              serverRemaining = typeof hd.remainingToday === 'number' ? hd.remainingToday : null;
-            } catch {}
-            refreshQuotaUI();
-            showVipMsg(data.message || 'Key Unlocked!', true);
-          } else {
-            showVipMsg(data.error || 'Invalid Key.', false);
-          }
-        } catch {
-          showVipMsg('Could not verify Key.', false);
-        }
-      } else {
-        const res = checkLocalKey(entered);
-        if (res.expired) {
-          showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 on Telegram to renew.', false);
-          return;
-        }
-        if (res.plan === 'free') {
-          showVipMsg('Invalid Key. Contact @ZenZyTwenty4 on Telegram.', false);
-          return;
-        }
-        currentPlan = res.plan;
-        currentTimeLabel = res.label;
-        vipKey = entered;
-        localStorage.setItem('nha_vip_key', entered);
-        refreshQuotaUI();
-        showVipMsg(`${PLANS[currentPlan].name} Unlocked (${currentTimeLabel})!`, true);
-      }
+    sb.auth.onAuthStateChange((_, session) => {
+      currentSession = session;
+      currentUser = session?.user || null;
+      loadProfile();
     });
 
     (async () => {
@@ -894,41 +799,21 @@
         try {
           const ctrl = new AbortController();
           setTimeout(() => ctrl.abort(), 1200);
-          const headers = vipKey ? { 'x-vip-key': vipKey } : {};
-          const res = await fetch('/api/health', { signal: ctrl.signal, headers });
+          const res = await fetch('/api/health', { signal: ctrl.signal });
           const ct = res.headers.get('content-type') || '';
           if (res.ok && ct.includes('application/json')) {
             const data = await res.json();
             if (data && data.ffmpegReady === true) {
               hasBackend = true;
-              currentPlan = data.plan || 'free';
-              currentTimeLabel = data.timeLabel || 'Lifetime';
-              if (currentPlan === 'free' && vipKey) {
-                localStorage.removeItem('nha_vip_key');
-                vipKey = '';
-                if (data.expired) showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 to renew.', false);
-              }
-              serverRemaining = typeof data.remainingToday === 'number' ? data.remainingToday : null;
               engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
-              refreshQuotaUI();
               return;
             }
           }
         } catch {}
       }
-
       hasBackend = false;
-      const localRes = vipKey ? checkLocalKey(vipKey) : { plan: 'free', expired: false, label: null };
-      currentPlan = localRes.plan;
-      currentTimeLabel = localRes.label;
-      if (currentPlan === 'free' && vipKey) {
-        localStorage.removeItem('nha_vip_key');
-        vipKey = '';
-        if (localRes.expired) showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 to renew.', false);
-      }
       setMode('faststart');
       engineBadge.textContent = '● Nha Engine 2.0 Browser Core: Ready (Faststart & FPS Patch)';
-      refreshQuotaUI();
     })();
 
     function setMode(mode) {
@@ -942,61 +827,47 @@
       document.getElementById('optimizer').scrollIntoView({ behavior: 'smooth' });
     }
 
-    modeButtons.forEach(btn => {
-      btn.addEventListener('click', () => setMode(btn.dataset.mode));
-    });
-
+    modeButtons.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
     dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
     dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
+      e.preventDefault(); dropzone.classList.remove('dragover');
       if (e.dataTransfer.files?.[0]) loadFile(e.dataTransfer.files[0]);
     });
-
-    videoInput.addEventListener('change', e => {
-      if (e.target.files?.[0]) loadFile(e.target.files[0]);
-    });
+    videoInput.addEventListener('change', e => { if (e.target.files?.[0]) loadFile(e.target.files[0]); });
 
     function loadFile(file) {
       selectedFile = file;
       fileBox.classList.add('visible');
       resultBox.classList.remove('visible', 'error');
       progressWrap.classList.remove('visible');
-
-      const sizeMB = file.size / (1024 * 1024);
       metaName.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
-      metaSize.textContent = sizeMB.toFixed(2) + ' MB';
+      metaSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
       metaRes.textContent = 'Checking...';
 
       const url = URL.createObjectURL(file);
       const vid = document.createElement('video');
       vid.preload = 'metadata';
-      vid.onloadedmetadata = () => {
-        URL.revokeObjectURL(url);
-        metaRes.textContent = vid.videoWidth ? `${vid.videoWidth}x${vid.videoHeight}` : 'MP4/MOV';
-      };
-      vid.onerror = () => {
-        URL.revokeObjectURL(url);
-        metaRes.textContent = 'MP4/MOV';
-      };
+      vid.onloadedmetadata = () => { URL.revokeObjectURL(url); metaRes.textContent = vid.videoWidth ? `${vid.videoWidth}x${vid.videoHeight}` : 'MP4/MOV'; };
+      vid.onerror = () => { URL.revokeObjectURL(url); metaRes.textContent = 'MP4/MOV'; };
       vid.src = url;
     }
 
     optimizeBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
+      if (!currentSession || !currentProfile) return openAuthModal('login');
 
-      const rules = PLANS[currentPlan];
+      const maxMB = currentProfile.max_mb === null ? Infinity : currentProfile.max_mb;
       const sizeMB = selectedFile.size / (1024 * 1024);
-      if (sizeMB > rules.maxMB) {
+      if (sizeMB > maxMB) {
         progressWrap.classList.add('visible');
-        showError(`File (${sizeMB.toFixed(1)} MB) exceeds your ${rules.name} limit (${rules.maxMB} MB). Enter a Creator (600 MB) or VIP (Unlimited) Key above!`);
+        showError(`File (${sizeMB.toFixed(1)} MB) exceeds your ${currentProfile.plan.toUpperCase()} limit (${maxMB} MB). Enter a Creator or VIP Key above!`);
         return;
       }
 
-      if (getRemainingToday() <= 0) {
+      if (currentProfile.remaining !== null && currentProfile.remaining <= 0) {
         progressWrap.classList.add('visible');
-        showError(`Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Enter a VIP Key above or try again tomorrow!`);
+        showError(`Daily limit reached (${currentProfile.daily_limit}/${currentProfile.daily_limit} today). Enter a VIP Key above or try tomorrow!`);
         return;
       }
 
@@ -1007,7 +878,7 @@
 
       if (!hasBackend) {
         progressWrap.classList.add('visible');
-        showError('H.264 re-encoding requires the Node.js FFmpeg server (localhost or Render). On Vercel, please select "Lossless Faststart" or "60 FPS Trick (2x)".');
+        showError('H.264 re-encoding requires the Node.js FFmpeg server (localhost or Render). On Vercel, select "Lossless Faststart" or "60 FPS Trick (2x)".');
         return;
       }
 
@@ -1019,19 +890,12 @@
       resultBox.classList.remove('visible', 'error');
       progressWrap.classList.add('visible');
       progressFill.style.width = '25%';
-      logLine.textContent = '[Nha Engine 2.0] Checking quota & reading MP4/MOV atoms...';
+      logLine.textContent = '[Nha Engine 2.0] Checking account quota & reading MP4/MOV...';
 
       try {
-        if (hasBackend && currentPlan !== 'vip') {
-          const qRes = await fetch('/api/quota/consume', {
-            method: 'POST',
-            headers: vipKey ? { 'x-vip-key': vipKey } : {}
-          });
-          const qData = await qRes.json();
-          if (!qRes.ok || !qData.allowed) {
-            throw new Error(qData.error || 'Daily limit reached.');
-          }
-          serverRemaining = qData.remainingToday;
+        const { data: qData, error: qErr } = await sb.rpc('consume_quota');
+        if (qErr || !qData?.allowed) {
+          throw new Error(qData?.error || qErr?.message || 'Daily limit reached.');
         }
 
         const buf = await selectedFile.arrayBuffer();
@@ -1040,9 +904,7 @@
 
         await new Promise(r => setTimeout(r, 60));
         const res = optimizeMp4InBrowser(buf, selectedMode);
-
-        if (currentPlan !== 'vip') incrementLocalQuota();
-        refreshQuotaUI();
+        await loadProfile();
 
         progressFill.style.width = '100%';
         logLine.textContent = 'Complete! Downloading MP4...';
@@ -1073,7 +935,7 @@
         a.click();
         a.remove();
       } catch (err) {
-        showError(err.message || 'Could not optimize this video in browser.');
+        showError(err.message || 'Could not optimize this video.');
       } finally {
         optimizeBtn.disabled = false;
       }
@@ -1095,7 +957,7 @@
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `/api/optimize?jobId=${encodeURIComponent(jobId)}`, true);
-      if (vipKey) xhr.setRequestHeader('x-vip-key', vipKey);
+      xhr.setRequestHeader('Authorization', `Bearer ${currentSession.access_token}`);
 
       xhr.upload.onprogress = e => {
         if (e.lengthComputable) {
@@ -1116,7 +978,7 @@
         }
       };
 
-      xhr.onload = () => {
+      xhr.onload = async () => {
         if (pollTimer) clearInterval(pollTimer);
         optimizeBtn.disabled = false;
         try {
@@ -1124,12 +986,7 @@
           if (xhr.status !== 200 || !data.success) {
             return showError(data.error || `Server error (HTTP ${xhr.status}).`);
           }
-          if (currentPlan !== 'vip') {
-            incrementLocalQuota();
-            serverRemaining = typeof data.remainingToday === 'number' ? data.remainingToday : serverRemaining;
-          }
-          refreshQuotaUI();
-
+          await loadProfile();
           progressFill.style.width = '100%';
           logLine.textContent = 'Complete! Downloading MP4...';
           resultBox.classList.remove('error');
@@ -1149,7 +1006,7 @@
           a.click();
           a.remove();
         } catch {
-          showError(`Server error (HTTP ${xhr.status || 'timeout'}). On Render Free, try files under ~80 MB for H.264 encode or use Lossless Faststart.`);
+          showError(`Server error (HTTP ${xhr.status || 'timeout'}).`);
         }
       };
 
@@ -1169,18 +1026,9 @@
       resultBox.textContent = msg;
     }
 
-    function readFourCC(view, offset) {
-      return String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
-    }
-
-    function readUint64(view, offset) {
-      return view.getUint32(offset, false) * 4294967296 + view.getUint32(offset + 4, false);
-    }
-
-    function writeUint64(view, offset, val) {
-      view.setUint32(offset, Math.floor(val / 4294967296), false);
-      view.setUint32(offset + 4, val >>> 0, false);
-    }
+    function readFourCC(view, offset) { return String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3)); }
+    function readUint64(view, offset) { return view.getUint32(offset, false) * 4294967296 + view.getUint32(offset + 4, false); }
+    function writeUint64(view, offset, val) { view.setUint32(offset, Math.floor(val / 4294967296), false); view.setUint32(offset + 4, val >>> 0, false); }
 
     function parseBoxes(view, start, end) {
       const boxes = [];
@@ -1189,13 +1037,8 @@
         const size32 = view.getUint32(pos, false);
         const type = readFourCC(view, pos + 4);
         let size = size32, headerSize = 8;
-        if (size32 === 1) {
-          if (pos + 16 > end) break;
-          size = readUint64(view, pos + 8);
-          headerSize = 16;
-        } else if (size32 === 0) {
-          size = end - pos;
-        }
+        if (size32 === 1) { if (pos + 16 > end) break; size = readUint64(view, pos + 8); headerSize = 16; }
+        else if (size32 === 0) { size = end - pos; }
         if (size < headerSize || pos + size > end) break;
         boxes.push({ type, start: pos, size, end: pos + size, headerSize, rawSize32: size32 });
         pos += size;
@@ -1206,38 +1049,26 @@
     function inspectMp4Buffer(buf) {
       const view = new DataView(buf);
       const top = parseBoxes(view, 0, buf.byteLength);
-      const ftyp = top.find(b => b.type === 'ftyp');
-      const moov = top.find(b => b.type === 'moov');
-      const mdat = top.find(b => b.type === 'mdat');
+      const ftyp = top.find(b => b.type === 'ftyp'), moov = top.find(b => b.type === 'moov'), mdat = top.find(b => b.type === 'mdat');
       if (!ftyp || !moov || !mdat) return { isMp4: false };
-
       let videoCodec = '', fps = 0;
-      const moovChildren = parseBoxes(view, moov.start + moov.headerSize, moov.end);
-      for (const child of moovChildren) {
+      for (const child of parseBoxes(view, moov.start + moov.headerSize, moov.end)) {
         if (child.type !== 'trak') continue;
-        const trakKids = parseBoxes(view, child.start + child.headerSize, child.end);
-        const mdia = trakKids.find(b => b.type === 'mdia');
+        const mdia = parseBoxes(view, child.start + child.headerSize, child.end).find(b => b.type === 'mdia');
         if (!mdia) continue;
         const mdiaKids = parseBoxes(view, mdia.start + mdia.headerSize, mdia.end);
         const hdlr = mdiaKids.find(b => b.type === 'hdlr');
         if (!hdlr || hdlr.size < 24 || readFourCC(view, hdlr.start + 16) !== 'vide') continue;
-
         const mdhd = mdiaKids.find(b => b.type === 'mdhd');
         let timescale = 0;
-        if (mdhd) {
-          const ver = view.getUint8(mdhd.start + 8);
-          timescale = view.getUint32(mdhd.start + (ver === 1 ? 28 : 20), false);
-        }
-
+        if (mdhd) { const ver = view.getUint8(mdhd.start + 8); timescale = view.getUint32(mdhd.start + (ver === 1 ? 28 : 20), false); }
         const minf = mdiaKids.find(b => b.type === 'minf');
         if (!minf) continue;
         const stbl = parseBoxes(view, minf.start + minf.headerSize, minf.end).find(b => b.type === 'stbl');
         if (!stbl) continue;
         const stblKids = parseBoxes(view, stbl.start + stbl.headerSize, stbl.end);
-
         const stsd = stblKids.find(b => b.type === 'stsd');
         if (stsd && stsd.size >= 24) videoCodec = readFourCC(view, stsd.start + 20);
-
         const stts = stblKids.find(b => b.type === 'stts');
         if (stts && timescale > 0) {
           const count = view.getUint32(stts.start + 12, false);
@@ -1245,10 +1076,8 @@
           for (let i = 0; i < count; i++) {
             const p = stts.start + 16 + i * 8;
             if (p + 8 > stts.end) break;
-            const sc = view.getUint32(p, false);
-            const sd = view.getUint32(p + 4, false);
-            samples += sc;
-            ticks += sc * sd;
+            const sc = view.getUint32(p, false), sd = view.getUint32(p + 4, false);
+            samples += sc; ticks += sc * sd;
           }
           if (ticks > 0) fps = Number(((samples * timescale) / ticks).toFixed(2));
         }
@@ -1259,45 +1088,33 @@
     function optimizeMp4InBrowser(buf, mode) {
       const srcView = new DataView(buf);
       const top = parseBoxes(srcView, 0, buf.byteLength);
-      const ftyp = top.find(b => b.type === 'ftyp');
-      const moov = top.find(b => b.type === 'moov');
-      const mdats = top.filter(b => b.type === 'mdat');
-
-      if (!ftyp || !moov || mdats.length === 0) {
-        throw new Error('This file is not a standard MP4/MOV container.');
-      }
+      const ftyp = top.find(b => b.type === 'ftyp'), moov = top.find(b => b.type === 'moov'), mdats = top.filter(b => b.type === 'mdat');
+      if (!ftyp || !moov || mdats.length === 0) throw new Error('This file is not a standard MP4/MOV container.');
 
       const info = inspectMp4Buffer(buf);
       const factor = mode === 'patch60' ? 2 : 1;
       const moovBytes = new Uint8Array(buf.slice(moov.start, moov.end));
       const moovView = new DataView(moovBytes.buffer);
-
       const tailBoxes = top.filter(b => b.type !== 'ftyp' && b.type !== 'moov' && b.type !== 'free' && b.type !== 'skip');
       let cursor = ftyp.size + moovBytes.byteLength;
       const offsetMap = [];
-      for (const b of tailBoxes) {
-        offsetMap.push({ origStart: b.start, origEnd: b.end, delta: cursor - b.start });
-        cursor += b.size;
-      }
+      for (const b of tailBoxes) { offsetMap.push({ origStart: b.start, origEnd: b.end, delta: cursor - b.start }); cursor += b.size; }
 
       const CONTAINERS = new Set(['moov', 'trak', 'mdia', 'minf', 'stbl', 'edts']);
       function walkAndPatch(start, end) {
         for (const box of parseBoxes(moovView, start, end)) {
-          if (CONTAINERS.has(box.type)) {
-            walkAndPatch(box.start + box.headerSize, box.end);
-          } else if (box.type === 'stco') {
+          if (CONTAINERS.has(box.type)) walkAndPatch(box.start + box.headerSize, box.end);
+          else if (box.type === 'stco') {
             const count = moovView.getUint32(box.start + 12, false);
             for (let i = 0; i < count; i++) {
-              const p = box.start + 16 + i * 4;
-              const oldOff = moovView.getUint32(p, false);
+              const p = box.start + 16 + i * 4, oldOff = moovView.getUint32(p, false);
               const mapped = offsetMap.find(m => oldOff >= m.origStart && oldOff < m.origEnd) || offsetMap[0];
               moovView.setUint32(p, (oldOff + mapped.delta) >>> 0, false);
             }
           } else if (box.type === 'co64') {
             const count = moovView.getUint32(box.start + 12, false);
             for (let i = 0; i < count; i++) {
-              const p = box.start + 16 + i * 8;
-              const oldOff = readUint64(moovView, p);
+              const p = box.start + 16 + i * 8, oldOff = readUint64(moovView, p);
               const mapped = offsetMap.find(m => oldOff >= m.origStart && oldOff < m.origEnd) || offsetMap[0];
               writeUint64(moovView, p, oldOff + mapped.delta);
             }
@@ -1311,9 +1128,7 @@
               if (ver === 0) moovView.setUint32(box.start + 28, Math.min(0xFFFFFFFF, moovView.getUint32(box.start + 28, false) * factor), false);
               else writeUint64(moovView, box.start + 36, readUint64(moovView, box.start + 36) * factor);
             } else if (box.type === 'elst') {
-              const ver = moovView.getUint8(box.start + 8);
-              const count = moovView.getUint32(box.start + 12, false);
-              const stride = ver === 1 ? 20 : 12;
+              const ver = moovView.getUint8(box.start + 8), count = moovView.getUint32(box.start + 12, false), stride = ver === 1 ? 20 : 12;
               for (let i = 0; i < count; i++) {
                 const p = box.start + 16 + i * stride;
                 if (ver === 1) writeUint64(moovView, p, readUint64(moovView, p) * factor);
@@ -1329,7 +1144,6 @@
           }
         }
       }
-
       walkAndPatch(moov.headerSize, moovBytes.byteLength);
 
       const blobParts = [new Uint8Array(buf, ftyp.start, ftyp.size), moovBytes];

@@ -11,167 +11,49 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
-// ====== PLAN LIMITS & KEYS (KEY = Lifetime | KEY@15d = 15 days from first use | KEY@YYYY-MM-DD = Fixed date) ======
+// ====== PUT YOUR SUPABASE PROJECT URL & ANON KEY HERE (OR IN RENDER ENV) ======
+const SUPABASE_URL = 'https://omrklwwgmbvlgmdfhbot.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_vamrbGtPSLckDQwKio7tqw_TctCPc0n';
+// ==============================================================================
+
 const PLANS = {
   free: { name: 'Free', maxMB: 250, dailyLimit: 5 },
   creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
   vip: { name: 'VIP', maxMB: null, dailyLimit: null }
 };
 
-function parseRule(specStr) {
-  const spec = (specStr || '').trim();
-  if (!spec || spec.toLowerCase() === 'lifetime') return { type: 'lifetime' };
-  if (/^\d+d$/i.test(spec)) {
-    const days = Number(spec.slice(0, -1));
-    return { type: 'duration', days, ms: days * 86400 * 1000 };
-  }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(spec)) return { type: 'date', date: spec };
-  return { type: 'lifetime' };
-}
-
-function buildKeyMap(rawStr) {
-  const map = new Map();
-  for (const item of rawStr.split(',')) {
-    const clean = item.trim();
-    if (!clean) continue;
-    const [keyPart, specPart] = clean.split('@');
-    const key = (keyPart || '').trim();
-    if (key) map.set(key, parseRule(specPart));
-  }
-  return map;
-}
-
-const CREATOR_KEY_MAP = buildKeyMap(
-  process.env.CREATOR_KEYS ||
-    [
-      // 15-day Creator Keys (starts counting 15 days when first activated)
-      'NHA-CR-4K9M2P@15d', 'NHA-CR-7X3W8Q@15d', 'NHA-CR-2R6N5T@15d', 'NHA-CR-9H4V3Z@15d', 'NHA-CR-5D8J7B@15d',
-      'NHA-CR-3F2Y6C@15d', 'NHA-CR-8P5G4W@15d', 'NHA-CR-6T9K3M@15d', 'NHA-CR-4N7R8H@15d', 'NHA-CR-2Q5X9D@15d',
-      // Lifetime Creator Keys
-      'NHA-CR-7W3B6F', 'NHA-CR-9M8C4P', 'NHA-CR-5K2Z7V', 'NHA-CR-3J6H9N', 'NHA-CR-8G4T2R',
-      'NHA-CR-6V9D5X', 'NHA-CR-4B3Q8K', 'NHA-CR-7Y5P2W', 'NHA-CR-9C6M3J', 'NHA-CR-2Z8F4G'
-    ].join(',')
-);
-
-const VIP_KEY_MAP = buildKeyMap(
-  process.env.VIP_KEYS ||
-    [
-      // 30-day VIP Keys (starts counting 30 days when first activated)
-      'NHA-VP-8K4M9R@30d', 'NHA-VP-3W7X2P@30d', 'NHA-VP-6N5Q8T@30d', 'NHA-VP-9Z2H4F@30d', 'NHA-VP-5C8B7D@30d',
-      'NHA-VP-4R6J3M@30d', 'NHA-VP-7T9V5K@30d', 'NHA-VP-2P3G8W@30d', 'NHA-VP-8F5D6Y@30d', 'NHA-VP-6M2K9N@30d',
-      // Lifetime VIP Keys
-      'NHA-VP-3X7C4Q', 'NHA-VP-9B8R2H', 'NHA-VP-5W4P7Z', 'NHA-VP-4H9T6G', 'NHA-VP-7J3N8V',
-      'NHA-VP-2D6F5B', 'NHA-VP-8Q5Y3K', 'NHA-VP-6K9W4M', 'NHA-VP-3G2Z7R', 'NHA-VP-9V8J5X'
-    ].join(',')
-);
-// ===================================================================================================================
-
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const OUTPUT_DIR = path.join(__dirname, 'outputs');
-const ACTIVATIONS_FILE = path.join(__dirname, 'key-activations.json');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const readyFiles = new Map();
 const jobs = new Map();
-const dailyUsage = new Map();
 
-// Load & save key activation timestamps
-const activations = new Map();
-try {
-  if (fs.existsSync(ACTIVATIONS_FILE)) {
-    const raw = JSON.parse(fs.readFileSync(ACTIVATIONS_FILE, 'utf8'));
-    for (const [k, ts] of Object.entries(raw)) {
-      if (typeof ts === 'number') activations.set(k, ts);
-    }
+async function callSupabaseRpc(rpcName, accessToken, body = {}) {
+  if (!SUPABASE_URL.startsWith('http') || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.startsWith('YOUR_')) {
+    throw new Error('Supabase is not configured in server.js.');
   }
-} catch {}
-
-function saveActivations() {
-  try {
-    fs.writeFileSync(ACTIVATIONS_FILE, JSON.stringify(Object.fromEntries(activations), null, 2));
-  } catch {}
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${rpcName}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || data.hint || 'Authentication failed. Please log in again.');
+  }
+  return data;
 }
 
-function getCambodiaDateKey() {
-  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
-}
-
-function getClientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (typeof fwd === 'string' && fwd.length > 0) return fwd.split(',')[0].trim();
-  return req.ip || 'unknown';
-}
-
-function getUsage(ip) {
-  const today = getCambodiaDateKey();
-  const entry = dailyUsage.get(ip);
-  if (!entry || entry.date !== today) {
-    const fresh = { date: today, count: 0 };
-    dailyUsage.set(ip, fresh);
-    return fresh;
-  }
-  return entry;
-}
-
-function formatRemaining(expiresAtMs) {
-  if (!expiresAtMs) return 'Lifetime';
-  const diff = expiresAtMs - Date.now();
-  if (diff <= 0) return 'Expired';
-  const totalMins = Math.floor(diff / 60000);
-  const days = Math.floor(totalMins / 1440);
-  const hours = Math.floor((totalMins % 1440) / 60);
-  const mins = totalMins % 60;
-  if (days > 0) return `${days}d ${hours}h left`;
-  if (hours > 0) return `${hours}h ${mins}m left`;
-  return `${Math.max(1, mins)}m left`;
-}
-
-function checkKey(keyStr) {
-  const key = (keyStr || '').toString().trim();
-  let plan = null;
-  let rule = null;
-
-  if (VIP_KEY_MAP.has(key)) {
-    plan = 'vip';
-    rule = VIP_KEY_MAP.get(key);
-  } else if (CREATOR_KEY_MAP.has(key)) {
-    plan = 'creator';
-    rule = CREATOR_KEY_MAP.get(key);
-  }
-
-  if (!plan) {
-    return { plan: 'free', valid: false, expired: false, expiresAtMs: null, label: null };
-  }
-
-  if (rule.type === 'lifetime') {
-    return { plan, valid: true, expired: false, expiresAtMs: null, label: 'Lifetime' };
-  }
-
-  if (rule.type === 'date') {
-    const endMs = Date.parse(`${rule.date}T23:59:59+07:00`);
-    if (Date.now() > endMs) {
-      return { plan: 'free', valid: false, expired: true, expiresAtMs: endMs, label: 'Expired' };
-    }
-    return { plan, valid: true, expired: false, expiresAtMs: endMs, label: formatRemaining(endMs) };
-  }
-
-  // Duration key (starts counting when first entered/used)
-  let activatedAt = activations.get(key);
-  if (!activatedAt) {
-    activatedAt = Date.now();
-    activations.set(key, activatedAt);
-    saveActivations();
-  }
-  const expiresAtMs = activatedAt + rule.ms;
-  if (Date.now() > expiresAtMs) {
-    return { plan: 'free', valid: false, expired: true, expiresAtMs, label: 'Expired' };
-  }
-  return { plan, valid: true, expired: false, expiresAtMs, label: formatRemaining(expiresAtMs) };
-}
-
-function getRequestKeyCheck(req) {
-  return checkKey(req.headers['x-vip-key'] || req.query.vipKey || '');
+function getBearerToken(req) {
+  const auth = req.headers.authorization || '';
+  if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+  return '';
 }
 
 const storage = multer.diskStorage({
@@ -201,82 +83,13 @@ const uploaders = {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_, res) => {
   const ffmpegReady = Boolean(ffmpegPath && fs.existsSync(ffmpegPath));
-  const keyStatus = getRequestKeyCheck(req);
-  const rules = PLANS[keyStatus.plan];
-  const usage = getUsage(getClientIp(req));
-
-  res.json({
-    ok: ffmpegReady,
-    ffmpegReady,
-    engine: 'Nha Engine 2.0',
-    plan: keyStatus.plan,
-    expiresAtMs: keyStatus.expiresAtMs,
-    timeLabel: keyStatus.label,
-    expired: keyStatus.expired,
-    maxFileMB: rules.maxMB,
-    dailyLimit: rules.dailyLimit,
-    usedToday: usage.count,
-    remainingToday: rules.dailyLimit === null ? null : Math.max(0, rules.dailyLimit - usage.count)
-  });
-});
-
-app.post('/api/vip/verify', (req, res) => {
-  const status = checkKey(req.body?.key);
-  if (status.expired) {
-    return res.status(401).json({
-      valid: false,
-      expired: true,
-      error: 'Your Key has expired! Contact @ZenZyTwenty4 on Telegram to renew.'
-    });
-  }
-  if (status.plan === 'vip') {
-    return res.json({
-      valid: true,
-      plan: 'vip',
-      expiresAtMs: status.expiresAtMs,
-      timeLabel: status.label,
-      message: `VIP Unlocked (${status.label})! Unlimited size & uploads active.`
-    });
-  }
-  if (status.plan === 'creator') {
-    return res.json({
-      valid: true,
-      plan: 'creator',
-      expiresAtMs: status.expiresAtMs,
-      timeLabel: status.label,
-      message: `Creator Unlocked (${status.label})! Max ${PLANS.creator.maxMB} MB & ${PLANS.creator.dailyLimit}/day.`
-    });
-  }
-  return res.status(401).json({ valid: false, error: 'Invalid Key. Contact @ZenZyTwenty4 on Telegram.' });
-});
-
-app.post('/api/quota/consume', (req, res) => {
-  const status = getRequestKeyCheck(req);
-  const rules = PLANS[status.plan];
-  if (rules.dailyLimit === null) {
-    return res.json({ allowed: true, plan: status.plan, remainingToday: null });
-  }
-  const usage = getUsage(getClientIp(req));
-  if (usage.count >= rules.dailyLimit) {
-    return res.status(429).json({
-      allowed: false,
-      error: `Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Get a VIP Key for Unlimited!`
-    });
-  }
-  usage.count += 1;
-  res.json({
-    allowed: true,
-    plan: status.plan,
-    usedToday: usage.count,
-    remainingToday: Math.max(0, rules.dailyLimit - usage.count)
-  });
+  res.json({ ok: ffmpegReady, ffmpegReady, engine: 'Nha Engine 2.0' });
 });
 
 app.get('/api/progress/:jobId', (req, res) => {
-  const job = jobs.get(req.params.jobId);
-  res.json(job || { pct: 0, msg: 'Waiting...' });
+  res.json(jobs.get(req.params.jobId) || { pct: 0, msg: 'Waiting...' });
 });
 
 function runExec(bin, args) {
@@ -363,23 +176,33 @@ function safeUnlink(filePath) {
   if (filePath && fs.existsSync(filePath)) fs.unlink(filePath, () => {});
 }
 
-app.post('/api/optimize', (req, res) => {
-  const ip = getClientIp(req);
-  const keyStatus = getRequestKeyCheck(req);
-  const rules = PLANS[keyStatus.plan];
-  const usage = getUsage(ip);
+app.post('/api/optimize', async (req, res) => {
+  const token = getBearerToken(req);
+  if (!token) {
+    return res.status(401).json({ error: 'Please log in first to optimize videos.' });
+  }
 
-  if (rules.dailyLimit !== null && usage.count >= rules.dailyLimit) {
+  let profile;
+  try {
+    profile = await callSupabaseRpc('get_my_profile', token);
+  } catch (authErr) {
+    return res.status(401).json({ error: authErr.message });
+  }
+
+  const plan = PLANS[profile.plan] ? profile.plan : 'free';
+  const rules = PLANS[plan];
+
+  if (profile.remaining !== null && profile.remaining <= 0) {
     return res.status(429).json({
-      error: `Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Enter a VIP Key for Unlimited uploads!`
+      error: `Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Get a VIP Key for Unlimited!`
     });
   }
 
-  uploaders[keyStatus.plan].single('video')(req, res, async err => {
+  uploaders[plan].single('video')(req, res, async err => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({
-          error: `File exceeds the ${rules.name} ${rules.maxMB} MB limit. Get a Creator (600 MB) or VIP (Unlimited) Key!`
+          error: `File exceeds your ${rules.name} ${rules.maxMB} MB limit. Get a Creator (600 MB) or VIP (Unlimited) Key!`
         });
       }
       return res.status(400).json({ error: err.message });
@@ -441,7 +264,7 @@ app.post('/api/optimize', (req, res) => {
       safeUnlink(inputPath);
       setTimeout(() => jobs.delete(jobId), 60_000);
 
-      if (rules.dailyLimit !== null) usage.count += 1;
+      const quotaRes = await callSupabaseRpc('consume_quota', token);
 
       readyFiles.set(fileId, { filePath: outputPath, downloadName, createdAt: Date.now() });
 
@@ -452,8 +275,8 @@ app.post('/api/optimize', (req, res) => {
         downloadUrl: `/api/download/${fileId}`,
         inputMeta,
         outputMeta,
-        plan: keyStatus.plan,
-        remainingToday: rules.dailyLimit === null ? null : Math.max(0, rules.dailyLimit - usage.count)
+        plan: quotaRes.plan || plan,
+        remainingToday: quotaRes.remaining
       });
     } catch (procErr) {
       safeUnlink(inputPath);
