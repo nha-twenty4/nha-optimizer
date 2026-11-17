@@ -157,9 +157,32 @@
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55); text-align: left;
     }
 
-    .engine-status { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green-bright); }
-    .mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+    .engine-status { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green-bright); }
 
+    .vip-bar {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); margin-bottom: 16px;
+    }
+    .vip-bar.creator-active { background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.5); }
+    .vip-bar.vip-active { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.45); }
+
+    .quota-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; color: #e2e8f0; }
+    .vip-bar.creator-active .quota-badge { color: #ddd6fe; }
+    .vip-bar.vip-active .quota-badge { color: #fcd34d; }
+
+    .vip-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .vip-input {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 9px 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+      min-height: 40px; width: 185px; outline: none;
+    }
+    .vip-input:focus { border-color: var(--amber); }
+    .vip-btn { min-height: 40px; padding: 8px 14px; font-size: 0.82rem; }
+    .vip-msg { width: 100%; font-size: 0.78rem; color: #fca5a5; display: none; }
+    .vip-msg.visible { display: block; }
+    .vip-msg.ok { color: var(--green-bright); }
+
+    .mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
     .mode-btn { text-align: left; min-height: 58px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--muted); cursor: pointer; font-family: inherit; transition: transform 0.18s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease; }
     @media (hover: hover) { .mode-btn:hover { border-color: var(--border-strong); color: var(--text); transform: translateY(-2px); } }
     .mode-btn.active { background: rgba(0, 245, 155, 0.1); border-color: rgba(0, 245, 155, 0.55); color: var(--text); box-shadow: 0 0 20px rgba(0, 245, 155, 0.12); }
@@ -214,6 +237,8 @@
     .tier-tag-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .tier-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
     .free-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0, 245, 155, 0.12); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
+    .creator-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(139, 92, 246, 0.18); border: 1px solid rgba(139, 92, 246, 0.45); color: #ddd6fe; }
+    .vip-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.4); color: #fcd34d; }
     .tier-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
     .tier-sub { font-size: 0.86rem; color: var(--muted); margin-bottom: 18px; }
     .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
@@ -291,6 +316,8 @@
       .support-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
       .support-card { padding: 20px; border-radius: 18px; }
       .tier-card { padding: 22px; border-radius: 18px; }
+      .vip-form { width: 100%; }
+      .vip-input { flex: 1; width: auto; min-width: 120px; }
     }
 
     @media (max-width: 480px) {
@@ -318,11 +345,11 @@
       </a>
       <nav class="nav-links">
         <a href="#optimizer">Optimizer</a>
-        <a href="#tiers">All Tiers (Free)</a>
-        <a href="#support">Contact &amp; Donate</a>
+        <a href="#tiers">Plans &amp; Limits</a>
+        <a href="#support">VIP Key &amp; Donate</a>
       </nav>
       <div class="nav-actions">
-        <a href="#support" class="btn btn-secondary">Donate ABA</a>
+        <a href="#support" class="btn btn-secondary">Get VIP Key</a>
         <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
         <button type="button" class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
@@ -336,8 +363,8 @@
 
     <div class="mobile-menu" id="mobileMenu">
       <a href="#optimizer" class="m-link">Optimizer</a>
-      <a href="#tiers" class="m-link">All Tiers (Free)</a>
-      <a href="#support" class="m-link">Contact &amp; Donate</a>
+      <a href="#tiers" class="m-link">Plans &amp; Limits</a>
+      <a href="#support" class="m-link">VIP Key &amp; Donate</a>
       <div class="mobile-menu-actions">
         <a href="#support" class="btn btn-secondary">Donate ABA</a>
         <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
@@ -350,17 +377,27 @@
       <div class="container">
         <div class="pill">
           <span class="pill-dot"></span>
-          ALL TIERS FREE • NHA ENGINE 2.0 • 1080P &amp; 4K 120FPS
+          NHA ENGINE 2.0 • FREE 250MB • CREATOR 600MB • VIP UNLIMITED
         </div>
         <h1>Optimize Videos For <span class="gradient-text">TikTok 1080p 60FPS</span></h1>
         <p class="hero-sub">
-          Powered by Nha Engine 2.0. Lossless Faststart &amp; FPS Patch run right in your browser; TikTok 60FPS &amp; Full HD 120FPS re-encode run with FFmpeg Server.
+          Free users get up to 250 MB &amp; 5/day. Unlock Creator (600 MB) or VIP (Unlimited) with a Key!
         </p>
 
         <div class="optimizer-panel">
           <div class="engine-status">
             <span id="engineBadge">● Checking Nha Engine 2.0...</span>
-            <span>All Tiers Unlocked ($0)</span>
+            <span id="limitSummary">Free: 250 MB max • 5/day</span>
+          </div>
+
+          <div class="vip-bar" id="vipBar">
+            <div class="quota-badge" id="quotaBadge">Uploads left today: 5 / 5 • Max 250 MB</div>
+            <form class="vip-form" id="vipForm">
+              <input type="password" class="vip-input" id="vipInput" placeholder="Creator / VIP Key..." autocomplete="off" />
+              <button type="submit" class="btn btn-amber vip-btn" id="vipBtn">Unlock Key</button>
+              <a href="#support" class="btn btn-secondary vip-btn">Get VIP Key</a>
+            </form>
+            <div class="vip-msg" id="vipMsg"></div>
           </div>
 
           <div class="mode-grid" id="modeGrid">
@@ -392,7 +429,7 @@
               </svg>
             </div>
             <h3>Drop your MP4 / MOV video here</h3>
-            <p>Or tap to choose a file — processes with Nha Engine 2.0 and downloads the output MP4</p>
+            <p>Or tap to choose a file — Free: 250 MB • Creator: 600 MB • VIP: Unlimited</p>
           </div>
 
           <div class="file-box" id="fileBox">
@@ -421,24 +458,24 @@
     <section class="section" id="tiers">
       <div class="container">
         <div class="section-header reveal">
-          <h2>All Tiers Unlocked — 100% Free</h2>
-          <p>Every feature from Member, Booster, and Premium is free right here with no limits.</p>
+          <h2>Plans &amp; Limits</h2>
+          <p>Free up to 250 MB, Creator up to 600 MB with VIP Key, or VIP for Unlimited power.</p>
         </div>
 
         <div class="tiers-grid">
           <article class="tier-card reveal" style="transition-delay: 0.05s;">
             <div class="tier-tag-row"><span class="tier-tag">MEMBER</span><span class="free-pill">$0 • FREE</span></div>
             <div class="tier-title">Free</div>
-            <div class="tier-sub">Instant access</div>
+            <div class="tier-sub">Open access for everyone</div>
             <div class="specs-grid">
-              <div class="spec-box"><div class="spec-val">100 MB</div><div class="spec-lbl">file size</div></div>
-              <div class="spec-box"><div class="spec-val">1080p</div><div class="spec-lbl">max resolution</div></div>
-              <div class="spec-box"><div class="spec-val">60 FPS</div><div class="spec-lbl">max framerate</div></div>
-              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
+              <div class="spec-box"><div class="spec-val">250 MB</div><div class="spec-lbl">file size</div></div>
+              <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
+              <div class="spec-box"><div class="spec-val">60 FPS</div><div class="spec-lbl">TikTok mode</div></div>
+              <div class="spec-box"><div class="spec-val">5 / DAY</div><div class="spec-lbl">uploads</div></div>
             </div>
             <div class="engine-box"><span>Nha Engine</span><strong>2.0</strong></div>
             <ul class="feature-list">
-              <li>Priority queue</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+              <li>Lossless Faststart</li><li>60 FPS Container Trick</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
             </ul>
             <div class="software-box">
               <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
@@ -446,23 +483,23 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <button class="btn btn-secondary" style="width:100%" onclick="choosePreset('faststart')">Use Lossless Faststart</button>
+            <button class="btn btn-secondary" style="width:100%" onclick="choosePreset('faststart')">Use Free (250 MB)</button>
           </article>
 
           <article class="tier-card recommended reveal" style="transition-delay: 0.15s;">
-            <div class="rec-badge">Free • Best for TikTok</div>
-            <div class="tier-tag-row"><span class="tier-tag">BOOSTER</span><span class="free-pill">$0 • FREE</span></div>
-            <div class="tier-title">Free</div>
-            <div class="tier-sub">No Nitro boost needed</div>
+            <div class="rec-badge">Key Required • Best for TikTok</div>
+            <div class="tier-tag-row"><span class="tier-tag">CREATOR</span><span class="creator-pill">VIP KEY</span></div>
+            <div class="tier-title">Creator</div>
+            <div class="tier-sub">Unlock 600 MB with Key</div>
             <div class="specs-grid">
-              <div class="spec-box"><div class="spec-val">200 MB</div><div class="spec-lbl">file size</div></div>
-              <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
+              <div class="spec-box"><div class="spec-val">600 MB</div><div class="spec-lbl">file size</div></div>
+              <div class="spec-box"><div class="spec-val">1080p</div><div class="spec-lbl">TikTok target</div></div>
               <div class="spec-box"><div class="spec-val">60 FPS</div><div class="spec-lbl">max framerate</div></div>
-              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
+              <div class="spec-box"><div class="spec-val">15 / DAY</div><div class="spec-lbl">uploads</div></div>
             </div>
-            <div class="engine-box"><span>Nha Engine</span><strong>2.0</strong></div>
+            <div class="engine-box"><span>Nha Engine</span><strong>2.0 + Creator</strong></div>
             <ul class="feature-list">
-              <li>Priority queue</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+              <li>TikTok 1080p 60 FPS</li><li>Up to 600 MB files</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
             </ul>
             <div class="software-box">
               <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
@@ -470,23 +507,23 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <button class="btn btn-purple" style="width:100%" onclick="choosePreset('tiktok60')">Use TikTok 1080p 60 FPS</button>
+            <a href="#support" class="btn btn-purple" style="width:100%">Get VIP Key</a>
           </article>
 
           <article class="tier-card premium reveal" style="transition-delay: 0.25s;">
-            <div class="rec-badge">Free • Full Unlimited</div>
-            <div class="tier-tag-row"><span class="tier-tag">PREMIUM</span><span class="free-pill">$0 • FREE</span></div>
-            <div class="tier-title">Free</div>
-            <div class="tier-sub">Full unlimited power</div>
+            <div class="rec-badge">VIP Key • Unlimited</div>
+            <div class="tier-tag-row"><span class="tier-tag">VIP UNLOCK</span><span class="vip-pill">KEY REQUIRED</span></div>
+            <div class="tier-title">VIP</div>
+            <div class="tier-sub">Donate ABA or contact @ZenZyTwenty4</div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
               <div class="spec-box"><div class="spec-val">120 FPS</div><div class="spec-lbl">max framerate</div></div>
               <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
             </div>
-            <div class="engine-box"><span>Nha Engine</span><strong>2.0 + priority</strong></div>
+            <div class="engine-box"><span>Nha Engine</span><strong>2.0 + VIP</strong></div>
             <ul class="feature-list">
-              <li>Priority queue</li><li>skip FPS check</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+              <li>No file size limit</li><li>No daily limit</li><li>Full HD 120 FPS</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
             </ul>
             <div class="software-box">
               <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
@@ -494,7 +531,7 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <button class="btn btn-amber" style="width:100%" onclick="choosePreset('fhd120')">Use Full HD 120 FPS</button>
+            <a href="#support" class="btn btn-amber" style="width:100%">Get VIP Key</a>
           </article>
         </div>
       </div>
@@ -503,20 +540,20 @@
     <section class="section" id="support">
       <div class="container">
         <div class="section-header reveal">
-          <h2>Contact &amp; Support</h2>
-          <p>Need help, presets, or want to support Nha Engine 2.0? Contact on Telegram or donate via ABA KHQR.</p>
+          <h2>VIP Key, Contact &amp; Donate</h2>
+          <p>Donate via ABA KHQR and message @ZenZyTwenty4 on Telegram to receive your Creator (600 MB) or VIP (Unlimited) Key.</p>
         </div>
 
         <div class="support-grid">
           <div class="support-card tg-card reveal" style="transition-delay: 0.08s;">
             <div>
               <span class="support-tag tag-tg">CONTACT OWNER</span>
-              <h3>Telegram Support</h3>
-              <p>Message directly on Telegram for help, custom presets, or feedback.</p>
+              <h3>Telegram Support &amp; VIP Key</h3>
+              <p>Message directly on Telegram for your Creator/VIP Key, custom presets, or help.</p>
             </div>
 
             <ul class="support-perks">
-              <li><span class="perk-dot">✓</span> Fast help with Nha Engine 2.0</li>
+              <li><span class="perk-dot">✓</span> Get Key to unlock 600 MB or Unlimited</li>
               <li><span class="perk-dot">✓</span> TikTok 1080p 60FPS &amp; 4K export settings</li>
               <li><span class="perk-dot">✓</span> Topaz, Handbrake &amp; color grading presets</li>
               <li><span class="perk-dot">✓</span> Direct contact &amp; bug reports</li>
@@ -541,7 +578,7 @@
             <div>
               <span class="support-tag tag-aba">DONATE • ABA BANK</span>
               <h3>Support Nha Engine 2.0</h3>
-              <p>Scan the ABA KHQR below or copy the account number. Thank you for supporting!</p>
+              <p>Scan the ABA KHQR below or copy the account number, then send receipt to @ZenZyTwenty4 for your Key.</p>
             </div>
 
             <div class="aba-box">
@@ -578,11 +615,22 @@
     </div>
   </footer>
 
- <script>
+  <script>
+    const PLANS = {
+      free: { name: 'Free', maxMB: 250, dailyLimit: 5 },
+      creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
+      vip: { name: 'VIP', maxMB: Infinity, dailyLimit: Infinity }
+    };
+    const FALLBACK_CREATOR_KEYS = new Set(['NHA-CREATOR-2026', 'CREATOR-VIP']);
+    const FALLBACK_VIP_KEYS = new Set(['NHA-VIP-2026', 'ZENZY-VIP']);
+
     let selectedMode = 'tiktok60';
     let selectedFile = null;
     let lastBlobUrl = null;
     let hasBackend = false;
+    let vipKey = localStorage.getItem('nha_vip_key') || '';
+    let currentPlan = 'free';
+    let serverRemaining = null;
 
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenu = document.getElementById('mobileMenu');
@@ -600,6 +648,13 @@
     const logLine = document.getElementById('logLine');
     const resultBox = document.getElementById('resultBox');
     const engineBadge = document.getElementById('engineBadge');
+    const limitSummary = document.getElementById('limitSummary');
+    const vipBar = document.getElementById('vipBar');
+    const quotaBadge = document.getElementById('quotaBadge');
+    const vipForm = document.getElementById('vipForm');
+    const vipInput = document.getElementById('vipInput');
+    const vipBtn = document.getElementById('vipBtn');
+    const vipMsg = document.getElementById('vipMsg');
 
     menuToggle.addEventListener('click', () => {
       const isOpen = mobileMenu.classList.toggle('open');
@@ -636,27 +691,157 @@
       });
     }
 
+    function getTodayKey() {
+      return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+    }
+
+    function getLocalQuota() {
+      const today = getTodayKey();
+      try {
+        const raw = JSON.parse(localStorage.getItem('nha_quota') || '{}');
+        if (raw.date === today && typeof raw.count === 'number') return raw;
+      } catch {}
+      return { date: today, count: 0 };
+    }
+
+    function incrementLocalQuota() {
+      const q = getLocalQuota();
+      q.count += 1;
+      localStorage.setItem('nha_quota', JSON.stringify(q));
+      return q;
+    }
+
+    function getRemainingToday() {
+      const limit = PLANS[currentPlan].dailyLimit;
+      if (limit === Infinity) return Infinity;
+      const localRem = Math.max(0, limit - getLocalQuota().count);
+      if (hasBackend && typeof serverRemaining === 'number') {
+        return Math.min(localRem, serverRemaining);
+      }
+      return localRem;
+    }
+
+    function refreshQuotaUI() {
+      vipBar.classList.remove('vip-active', 'creator-active');
+      if (currentPlan === 'vip') {
+        vipBar.classList.add('vip-active');
+        quotaBadge.textContent = '★ VIP UNLOCKED: Unlimited Size • Unlimited Uploads';
+        limitSummary.textContent = 'VIP Plan: Unlimited';
+        vipInput.style.display = 'none';
+        vipBtn.textContent = 'Remove Key';
+      } else if (currentPlan === 'creator') {
+        vipBar.classList.add('creator-active');
+        const rem = getRemainingToday();
+        quotaBadge.textContent = `★ CREATOR: ${rem} / ${PLANS.creator.dailyLimit} left today • Max ${PLANS.creator.maxMB} MB`;
+        limitSummary.textContent = `Creator: ${PLANS.creator.maxMB} MB max • ${PLANS.creator.dailyLimit}/day`;
+        vipInput.style.display = 'none';
+        vipBtn.textContent = 'Remove Key';
+      } else {
+        const rem = getRemainingToday();
+        quotaBadge.textContent = `Uploads left today: ${rem} / ${PLANS.free.dailyLimit} • Max ${PLANS.free.maxMB} MB`;
+        limitSummary.textContent = `Free: ${PLANS.free.maxMB} MB max • ${PLANS.free.dailyLimit}/day`;
+        vipInput.style.display = '';
+        vipBtn.textContent = 'Unlock Key';
+      }
+    }
+
+    function showVipMsg(text, ok = false) {
+      vipMsg.textContent = text;
+      vipMsg.className = ok ? 'vip-msg visible ok' : 'vip-msg visible';
+      setTimeout(() => vipMsg.classList.remove('visible'), 4000);
+    }
+
+    vipForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (currentPlan !== 'free') {
+        currentPlan = 'free';
+        vipKey = '';
+        localStorage.removeItem('nha_vip_key');
+        vipInput.value = '';
+        refreshQuotaUI();
+        showVipMsg('Key removed. Switched back to Free (250 MB).', false);
+        return;
+      }
+
+      const entered = vipInput.value.trim();
+      if (!entered) {
+        showVipMsg('Please enter your Creator or VIP Key first.', false);
+        return;
+      }
+
+      if (hasBackend) {
+        try {
+          const r = await fetch('/api/vip/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: entered })
+          });
+          const data = await r.json();
+          if (r.ok && data.valid) {
+            currentPlan = data.plan || 'vip';
+            vipKey = entered;
+            localStorage.setItem('nha_vip_key', entered);
+            // Refresh server remaining quota for new plan
+            try {
+              const hr = await fetch('/api/health', { headers: { 'x-vip-key': entered } });
+              const hd = await hr.json();
+              serverRemaining = typeof hd.remainingToday === 'number' ? hd.remainingToday : null;
+            } catch {}
+            refreshQuotaUI();
+            showVipMsg(data.message || 'Key Unlocked!', true);
+          } else {
+            showVipMsg(data.error || 'Invalid Key.', false);
+          }
+        } catch {
+          showVipMsg('Could not verify Key.', false);
+        }
+      } else {
+        if (FALLBACK_VIP_KEYS.has(entered)) {
+          currentPlan = 'vip';
+        } else if (FALLBACK_CREATOR_KEYS.has(entered)) {
+          currentPlan = 'creator';
+        } else {
+          showVipMsg('Invalid Key. Contact @ZenZyTwenty4 on Telegram.', false);
+          return;
+        }
+        vipKey = entered;
+        localStorage.setItem('nha_vip_key', entered);
+        refreshQuotaUI();
+        showVipMsg(`${PLANS[currentPlan].name} Unlocked!`, true);
+      }
+    });
+
     (async () => {
       const isVercel = location.hostname.endsWith('.vercel.app');
       if (!isVercel) {
         try {
           const ctrl = new AbortController();
           setTimeout(() => ctrl.abort(), 1200);
-          const res = await fetch('/api/health', { signal: ctrl.signal });
+          const headers = vipKey ? { 'x-vip-key': vipKey } : {};
+          const res = await fetch('/api/health', { signal: ctrl.signal, headers });
           const ct = res.headers.get('content-type') || '';
           if (res.ok && ct.includes('application/json')) {
             const data = await res.json();
             if (data && data.ffmpegReady === true) {
               hasBackend = true;
+              currentPlan = data.plan || 'free';
+              if (currentPlan === 'free' && vipKey) localStorage.removeItem('nha_vip_key');
+              serverRemaining = typeof data.remainingToday === 'number' ? data.remainingToday : null;
               engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
+              refreshQuotaUI();
               return;
             }
           }
         } catch {}
       }
+
       hasBackend = false;
+      if (vipKey && FALLBACK_VIP_KEYS.has(vipKey)) currentPlan = 'vip';
+      else if (vipKey && FALLBACK_CREATOR_KEYS.has(vipKey)) currentPlan = 'creator';
+      else currentPlan = 'free';
       setMode('faststart');
       engineBadge.textContent = '● Nha Engine 2.0 Browser Core: Ready (Faststart & FPS Patch)';
+      refreshQuotaUI();
     })();
 
     function setMode(mode) {
@@ -692,8 +877,9 @@
       resultBox.classList.remove('visible', 'error');
       progressWrap.classList.remove('visible');
 
+      const sizeMB = file.size / (1024 * 1024);
       metaName.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
-      metaSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      metaSize.textContent = sizeMB.toFixed(2) + ' MB';
       metaRes.textContent = 'Checking...';
 
       const url = URL.createObjectURL(file);
@@ -713,30 +899,65 @@
     optimizeBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
 
-      if (hasBackend) {
-        runBackendOptimize();
+      const rules = PLANS[currentPlan];
+      const sizeMB = selectedFile.size / (1024 * 1024);
+      if (sizeMB > rules.maxMB) {
+        progressWrap.classList.add('visible');
+        showError(`File (${sizeMB.toFixed(1)} MB) exceeds your ${rules.name} limit (${rules.maxMB} MB). Enter a Creator (600 MB) or VIP (Unlimited) Key above!`);
         return;
       }
 
-      if (selectedMode === 'tiktok60' || selectedMode === 'fhd120') {
+      if (getRemainingToday() <= 0) {
+        progressWrap.classList.add('visible');
+        showError(`Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Enter a VIP Key above or try again tomorrow!`);
+        return;
+      }
+
+      if (selectedMode === 'faststart' || selectedMode === 'patch60') {
+        await runBrowserOptimize();
+        return;
+      }
+
+      if (!hasBackend) {
         progressWrap.classList.add('visible');
         showError('H.264 re-encoding requires the Node.js FFmpeg server (localhost or Render). On Vercel, please select "Lossless Faststart" or "60 FPS Trick (2x)".');
         return;
       }
 
+      runBackendOptimize();
+    });
+
+    async function runBrowserOptimize() {
       optimizeBtn.disabled = true;
       resultBox.classList.remove('visible', 'error');
       progressWrap.classList.add('visible');
       progressFill.style.width = '25%';
-      logLine.textContent = '[Nha Engine 2.0] Reading MP4/MOV atoms in browser...';
+      logLine.textContent = '[Nha Engine 2.0] Checking quota & reading MP4/MOV atoms...';
 
       try {
+        if (hasBackend && currentPlan !== 'vip') {
+          const qRes = await fetch('/api/quota/consume', {
+            method: 'POST',
+            headers: vipKey ? { 'x-vip-key': vipKey } : {}
+          });
+          const qData = await qRes.json();
+          if (!qRes.ok || !qData.allowed) {
+            throw new Error(qData.error || 'Daily limit reached.');
+          }
+          serverRemaining = qData.remainingToday;
+        }
+
         const buf = await selectedFile.arrayBuffer();
         progressFill.style.width = '65%';
         logLine.textContent = '[Nha Engine 2.0] Moving moov atom & updating offsets...';
 
         await new Promise(r => setTimeout(r, 60));
         const res = optimizeMp4InBrowser(buf, selectedMode);
+
+        if (currentPlan !== 'vip') {
+          incrementLocalQuota();
+        }
+        refreshQuotaUI();
 
         progressFill.style.width = '100%';
         logLine.textContent = 'Complete! Downloading MP4...';
@@ -771,7 +992,7 @@
       } finally {
         optimizeBtn.disabled = false;
       }
-    });
+    }
 
     function runBackendOptimize() {
       const jobId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
@@ -789,6 +1010,7 @@
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `/api/optimize?jobId=${encodeURIComponent(jobId)}`, true);
+      if (vipKey) xhr.setRequestHeader('x-vip-key', vipKey);
 
       xhr.upload.onprogress = e => {
         if (e.lengthComputable) {
@@ -815,8 +1037,14 @@
         try {
           const data = JSON.parse(xhr.responseText);
           if (xhr.status !== 200 || !data.success) {
-            return showError(data.error || 'Optimization failed.');
+            return showError(data.error || `Server error (HTTP ${xhr.status}).`);
           }
+          if (currentPlan !== 'vip') {
+            incrementLocalQuota();
+            serverRemaining = typeof data.remainingToday === 'number' ? data.remainingToday : serverRemaining;
+          }
+          refreshQuotaUI();
+
           progressFill.style.width = '100%';
           logLine.textContent = 'Complete! Downloading MP4...';
           resultBox.classList.remove('error');
@@ -836,7 +1064,7 @@
           a.click();
           a.remove();
         } catch {
-          showError('Unexpected server response.');
+          showError(`Server error (HTTP ${xhr.status || 'timeout'}). On Render Free, try files under ~80 MB for H.264 encode or use Lossless Faststart.`);
         }
       };
 

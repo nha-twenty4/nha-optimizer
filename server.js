@@ -8,7 +8,30 @@ const ffmpegPath = require('ffmpeg-static');
 const ffprobePath = require('ffprobe-static').path;
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
+
+// ====== PLAN LIMITS & KEYS ======
+const PLANS = {
+  free: { name: 'Free', maxMB: 250, dailyLimit: 5 },
+  creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
+  vip: { name: 'VIP', maxMB: null, dailyLimit: null }
+};
+
+const CREATOR_KEYS = new Set(
+  (process.env.CREATOR_KEYS || 'NHA-CREATOR-2026,CREATOR-VIP')
+    .split(',')
+    .map(k => k.trim())
+    .filter(Boolean)
+);
+
+const VIP_KEYS = new Set(
+  (process.env.VIP_KEYS || 'NHA-VIP-2026,ZENZY-VIP')
+    .split(',')
+    .map(k => k.trim())
+    .filter(Boolean)
+);
+// =================================
 
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const OUTPUT_DIR = path.join(__dirname, 'outputs');
@@ -17,6 +40,42 @@ fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const readyFiles = new Map();
 const jobs = new Map();
+const dailyUsage = new Map();
+
+function getCambodiaDateKey() {
+  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+function getClientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (typeof fwd === 'string' && fwd.length > 0) {
+    return fwd.split(',')[0].trim();
+  }
+  return req.ip || 'unknown';
+}
+
+function getUsage(ip) {
+  const today = getCambodiaDateKey();
+  const entry = dailyUsage.get(ip);
+  if (!entry || entry.date !== today) {
+    const fresh = { date: today, count: 0 };
+    dailyUsage.set(ip, fresh);
+    return fresh;
+  }
+  return entry;
+}
+
+function getPlanFromKey(keyStr) {
+  const key = (keyStr || '').toString().trim();
+  if (VIP_KEYS.has(key)) return 'vip';
+  if (CREATOR_KEYS.has(key)) return 'creator';
+  return 'free';
+}
+
+function getRequestPlan(req) {
+  const key = req.headers['x-vip-key'] || req.query.vipKey || '';
+  return getPlanFromKey(key);
+}
 
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, UPLOAD_DIR),
@@ -26,25 +85,86 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 50 * 1024 * 1024 * 1024 }, // 50 GB max
-  fileFilter: (_, file, cb) => {
-    const allowedExt = ['.mp4', '.mov', '.mkv', '.webm', '.m4v'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (file.mimetype.startsWith('video/') || allowedExt.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Please upload a valid video file (MP4, MOV, MKV, WEBM).'));
-    }
+function videoFileFilter(_, file, cb) {
+  const allowedExt = ['.mp4', '.mov', '.mkv', '.webm', '.m4v'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (file.mimetype.startsWith('video/') || allowedExt.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Please upload a valid video file (MP4, MOV, MKV, WEBM).'));
   }
-});
+}
 
+const uploaders = {
+  free: multer({ storage, limits: { fileSize: PLANS.free.maxMB * 1024 * 1024 }, fileFilter: videoFileFilter }),
+  creator: multer({ storage, limits: { fileSize: PLANS.creator.maxMB * 1024 * 1024 }, fileFilter: videoFileFilter }),
+  vip: multer({ storage, limits: { fileSize: 50 * 1024 * 1024 * 1024 }, fileFilter: videoFileFilter })
+};
+
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/health', (_, res) => {
+app.get('/api/health', (req, res) => {
   const ffmpegReady = Boolean(ffmpegPath && fs.existsSync(ffmpegPath));
-  res.json({ ok: ffmpegReady, ffmpegReady, engine: 'Nha Engine 2.0' });
+  const plan = getRequestPlan(req);
+  const rules = PLANS[plan];
+  const usage = getUsage(getClientIp(req));
+
+  res.json({
+    ok: ffmpegReady,
+    ffmpegReady,
+    engine: 'Nha Engine 2.0',
+    plan,
+    maxFileMB: rules.maxMB,
+    dailyLimit: rules.dailyLimit,
+    usedToday: usage.count,
+    remainingToday: rules.dailyLimit === null ? null : Math.max(0, rules.dailyLimit - usage.count)
+  });
+});
+
+app.post('/api/vip/verify', (req, res) => {
+  const plan = getPlanFromKey(req.body?.key);
+  if (plan === 'vip') {
+    return res.json({
+      valid: true,
+      plan: 'vip',
+      maxFileMB: null,
+      dailyLimit: null,
+      message: 'VIP Unlocked! Unlimited file size & uploads active.'
+    });
+  }
+  if (plan === 'creator') {
+    return res.json({
+      valid: true,
+      plan: 'creator',
+      maxFileMB: PLANS.creator.maxMB,
+      dailyLimit: PLANS.creator.dailyLimit,
+      message: `Creator Unlocked! Max ${PLANS.creator.maxMB} MB & ${PLANS.creator.dailyLimit} uploads/day.`
+    });
+  }
+  return res.status(401).json({ valid: false, error: 'Invalid Key. Contact @ZenZyTwenty4 on Telegram.' });
+});
+
+app.post('/api/quota/consume', (req, res) => {
+  const plan = getRequestPlan(req);
+  const rules = PLANS[plan];
+  if (rules.dailyLimit === null) {
+    return res.json({ allowed: true, plan, remainingToday: null });
+  }
+  const usage = getUsage(getClientIp(req));
+  if (usage.count >= rules.dailyLimit) {
+    return res.status(429).json({
+      allowed: false,
+      error: `Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Get a VIP Key for Unlimited!`
+    });
+  }
+  usage.count += 1;
+  res.json({
+    allowed: true,
+    plan,
+    usedToday: usage.count,
+    remainingToday: Math.max(0, rules.dailyLimit - usage.count)
+  });
 });
 
 app.get('/api/progress/:jobId', (req, res) => {
@@ -145,8 +265,26 @@ function safeUnlink(filePath) {
 }
 
 app.post('/api/optimize', (req, res) => {
-  upload.single('video')(req, res, async err => {
-    if (err) return res.status(400).json({ error: err.message });
+  const ip = getClientIp(req);
+  const plan = getRequestPlan(req);
+  const rules = PLANS[plan];
+  const usage = getUsage(ip);
+
+  if (rules.dailyLimit !== null && usage.count >= rules.dailyLimit) {
+    return res.status(429).json({
+      error: `Daily ${rules.name} limit reached (${rules.dailyLimit}/${rules.dailyLimit} today). Enter a VIP Key for Unlimited uploads!`
+    });
+  }
+
+  uploaders[plan].single('video')(req, res, async err => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+          error: `File exceeds the ${rules.name} ${rules.maxMB} MB limit. Get a Creator (600 MB) or VIP (Unlimited) Key!`
+        });
+      }
+      return res.status(400).json({ error: err.message });
+    }
     if (!req.file) return res.status(400).json({ error: 'No video file uploaded.' });
 
     const inputPath = req.file.path;
@@ -219,6 +357,10 @@ app.post('/api/optimize', (req, res) => {
       safeUnlink(inputPath);
       setTimeout(() => jobs.delete(jobId), 60_000);
 
+      if (rules.dailyLimit !== null) {
+        usage.count += 1;
+      }
+
       readyFiles.set(fileId, {
         filePath: outputPath,
         downloadName,
@@ -231,7 +373,9 @@ app.post('/api/optimize', (req, res) => {
         downloadName,
         downloadUrl: `/api/download/${fileId}`,
         inputMeta,
-        outputMeta
+        outputMeta,
+        plan,
+        remainingToday: rules.dailyLimit === null ? null : Math.max(0, rules.dailyLimit - usage.count)
       });
     } catch (procErr) {
       safeUnlink(inputPath);
@@ -263,6 +407,7 @@ setInterval(() => {
 const server = app.listen(PORT, () => {
   const ok = ffmpegPath && fs.existsSync(ffmpegPath);
   console.log(`Nha Engine 2.0 running at http://localhost:${PORT}`);
+  console.log(`Plans: Free=${PLANS.free.maxMB}MB (${PLANS.free.dailyLimit}/day) | Creator=${PLANS.creator.maxMB}MB (${PLANS.creator.dailyLimit}/day) | VIP=Unlimited`);
   console.log(ok ? 'FFmpeg binary: READY' : 'FFmpeg binary MISSING! Run: node node_modules/ffmpeg-static/install.js');
 });
 server.timeout = 0;
