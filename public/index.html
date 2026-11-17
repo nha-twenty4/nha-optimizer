@@ -578,7 +578,7 @@
     </div>
   </footer>
 
-  <script>
+ <script>
     let selectedMode = 'tiktok60';
     let selectedFile = null;
     let lastBlobUrl = null;
@@ -637,16 +637,23 @@
     }
 
     (async () => {
-      try {
-        const ctrl = new AbortController();
-        setTimeout(() => ctrl.abort(), 800);
-        const res = await fetch('/api/health', { signal: ctrl.signal });
-        if (res.ok) {
-          hasBackend = true;
-          engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
-          return;
-        }
-      } catch {}
+      const isVercel = location.hostname.endsWith('.vercel.app');
+      if (!isVercel) {
+        try {
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), 1200);
+          const res = await fetch('/api/health', { signal: ctrl.signal });
+          const ct = res.headers.get('content-type') || '';
+          if (res.ok && ct.includes('application/json')) {
+            const data = await res.json();
+            if (data && data.ffmpegReady === true) {
+              hasBackend = true;
+              engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
+              return;
+            }
+          }
+        } catch {}
+      }
       hasBackend = false;
       setMode('faststart');
       engineBadge.textContent = '● Nha Engine 2.0 Browser Core: Ready (Faststart & FPS Patch)';
@@ -713,7 +720,7 @@
 
       if (selectedMode === 'tiktok60' || selectedMode === 'fhd120') {
         progressWrap.classList.add('visible');
-        showError('H.264 re-encoding requires the Node.js FFmpeg server (localhost or Render). On Vercel static hosting, please select "Lossless Faststart" or "60 FPS Trick (2x)".');
+        showError('H.264 re-encoding requires the Node.js FFmpeg server (localhost or Render). On Vercel, please select "Lossless Faststart" or "60 FPS Trick (2x)".');
         return;
       }
 
@@ -728,7 +735,7 @@
         progressFill.style.width = '65%';
         logLine.textContent = '[Nha Engine 2.0] Moving moov atom & updating offsets...';
 
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 60));
         const res = optimizeMp4InBrowser(buf, selectedMode);
 
         progressFill.style.width = '100%';
@@ -1012,21 +1019,21 @@
 
       walkAndPatch(moov.headerSize, moovBytes.byteLength);
 
-      const out = new Uint8Array(cursor);
-      const outView = new DataView(out.buffer);
-      let writePos = 0;
-      out.set(new Uint8Array(buf, ftyp.start, ftyp.size), writePos); writePos += ftyp.size;
-      out.set(moovBytes, writePos); writePos += moovBytes.byteLength;
+      const blobParts = [new Uint8Array(buf, ftyp.start, ftyp.size), moovBytes];
       for (const b of tailBoxes) {
-        out.set(new Uint8Array(buf, b.start, b.size), writePos);
-        if (b.rawSize32 === 0 && b.size <= 0xFFFFFFFF) outView.setUint32(writePos, b.size, false);
-        writePos += b.size;
+        if (b.rawSize32 === 0 && b.size <= 0xFFFFFFFF) {
+          const hdr = new Uint8Array(buf.slice(b.start, b.start + 4));
+          new DataView(hdr.buffer).setUint32(0, b.size, false);
+          blobParts.push(hdr, new Uint8Array(buf, b.start + 4, b.size - 4));
+        } else {
+          blobParts.push(new Uint8Array(buf, b.start, b.size));
+        }
       }
 
       const fpsText = info.fps ? `${info.fps} FPS` : 'Original FPS';
       const newFpsText = factor > 1 && info.fps ? `${(info.fps / factor).toFixed(2)} FPS container (${factor}x patch)` : `${fpsText} (Lossless)`;
       return {
-        blob: new Blob([out], { type: 'video/mp4' }),
+        blob: new Blob(blobParts, { type: 'video/mp4' }),
         inputSummary: `${(info.videoCodec || 'MP4').toUpperCase()} • ${fpsText} • ${info.moovBeforeMdat ? 'moov front' : 'moov end'}`,
         outputSummary: `${(info.videoCodec || 'MP4').toUpperCase()} • ${newFpsText} • Faststart (moov front)`
       };

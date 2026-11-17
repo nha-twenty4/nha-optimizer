@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 * 1024 }, // 50 GB max (Unlimited)
+  limits: { fileSize: 50 * 1024 * 1024 * 1024 }, // 50 GB max
   fileFilter: (_, file, cb) => {
     const allowedExt = ['.mp4', '.mov', '.mkv', '.webm', '.m4v'];
     const ext = path.extname(file.originalname).toLowerCase();
@@ -42,25 +42,10 @@ const upload = multer({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-(async () => {
-      try {
-        const ctrl = new AbortController();
-        setTimeout(() => ctrl.abort(), 1200);
-        const res = await fetch('/api/health', { signal: ctrl.signal });
-        const ct = res.headers.get('content-type') || '';
-        if (res.ok && ct.includes('application/json')) {
-          const data = await res.json();
-          if (data && data.ffmpegReady === true) {
-            hasBackend = true;
-            engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
-            return;
-          }
-        }
-      } catch {}
-      hasBackend = false;
-      setMode('faststart');
-      engineBadge.textContent = '● Nha Engine 2.0 Browser Core: Ready (Faststart & FPS Patch)';
-    })();
+app.get('/api/health', (_, res) => {
+  const ffmpegReady = Boolean(ffmpegPath && fs.existsSync(ffmpegPath));
+  res.json({ ok: ffmpegReady, ffmpegReady, engine: 'Nha Engine 2.0' });
+});
 
 app.get('/api/progress/:jobId', (req, res) => {
   const job = jobs.get(req.params.jobId);
