@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Nha Engine 2.0 — TikTok 1080p 60FPS &amp; 120FPS Optimizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06070b;
+      --card: rgba(16, 20, 29, 0.88);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #f3f5f9;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --green: #76b900;
+      --green-bright: #00f59b;
+      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --amber: #f59e0b;
+      --tg: #2aabee;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    body {
+      position: relative;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    /* Ambient floating background orbs */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      animation: floatOrb 14s ease-in-out infinite alternate;
+    }
+
+    .orb-1 {
+      width: 420px; height: 420px;
+      top: -80px; left: -60px;
+      background: radial-gradient(circle, rgba(0, 245, 155, 0.45), transparent 70%);
+    }
+
+    .orb-2 {
+      width: 460px; height: 460px;
+      top: 18%; right: -100px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.45), transparent 70%);
+      animation-delay: -5s;
+      animation-duration: 18s;
+    }
+
+    .orb-3 {
+      width: 400px; height: 400px;
+      bottom: -80px; left: 35%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.35), transparent 70%);
+      animation-delay: -9s;
+      animation-duration: 16s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(35px, 28px) scale(1.08); }
+      100% { transform: translate(-25px, -20px) scale(0.96); }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+    }
+
+    /* Navbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(6, 7, 11, 0.82);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 70px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.12rem;
+      text-decoration: none;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--green), var(--green-bright));
+      color: #041008;
+      display: grid;
+      place-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 0.82rem;
+      box-shadow: 0 0 22px rgba(0, 245, 155, 0.35);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .brand:hover .brand-badge { transform: rotate(-6deg) scale(1.08); }
+
+    .nav-links { display: flex; align-items: center; gap: 26px; }
+    .nav-links a {
+      position: relative;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: -4px;
+      width: 0; height: 2px;
+      background: var(--green-bright);
+      transition: width 0.22s ease;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+    .menu-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: 1px solid var(--border-strong);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 24px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(8, 10, 16, 0.96);
+    }
+
+    .mobile-menu.open {
+      display: flex;
+      animation: fadeUp 0.22s ease-out both;
+    }
+
+    .mobile-menu a.m-link {
+      padding: 11px 12px;
+      border-radius: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .mobile-menu-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 11px 18px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -120%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      transform: skewX(-22deg);
+      transition: left 0.55s ease;
+    }
+
+    @media (hover: hover) {
+      .btn:hover:not(:disabled)::before { left: 140%; }
+      .btn-primary:hover:not(:disabled) { box-shadow: 0 10px 32px rgba(0, 245, 155, 0.42); transform: translateY(-2px); }
+      .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+      .btn-purple:hover { box-shadow: 0 10px 30px rgba(139, 92, 246, 0.45); transform: translateY(-2px); }
+      .btn-amber:hover { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4); transform: translateY(-2px); }
+      .btn-tg:hover { box-shadow: 0 10px 32px rgba(42, 171, 238, 0.48); transform: translateY(-2px); }
+    }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), var(--green-bright));
+      color: #041108;
+      box-shadow: 0 6px 24px rgba(0, 245, 155, 0.22);
+    }
+
+    .btn-secondary { background: rgba(255, 255, 255, 0.06); color: var(--text); border-color: var(--border-strong); }
+    .btn-purple { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; box-shadow: 0 6px 22px rgba(139, 92, 246, 0.25); }
+    .btn-amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #140d02; box-shadow: 0 6px 22px rgba(245, 158, 11, 0.22); }
+    .btn-tg { background: linear-gradient(135deg, #229ed9, #2aabee); color: #fff; box-shadow: 0 8px 24px rgba(42, 171, 238, 0.28); }
+
+    /* Hero */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero { padding: 52px 0 36px; text-align: center; }
+    .hero .pill { animation: fadeUp 0.6s ease-out both; }
+    .hero h1 { animation: fadeUp 0.7s ease-out 0.08s both; }
+    .hero .hero-sub { animation: fadeUp 0.75s ease-out 0.16s both; }
+    .hero .optimizer-panel { animation: fadeUp 0.8s ease-out 0.24s both; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 245, 155, 0.1);
+      border: 1px solid rgba(0, 245, 155, 0.28);
+      color: var(--green-bright);
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      max-width: 100%;
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green-bright);
+      box-shadow: 0 0 10px var(--green-bright);
+      animation: pulseDot 1.8s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 245, 155, 0.7); }
+      50% { transform: scale(1.25); box-shadow: 0 0 0 8px rgba(0, 245, 155, 0); }
+    }
+
+    h1 {
+      font-size: clamp(1.85rem, 5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      max-width: 840px;
+      margin: 0 auto 14px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #ffffff 0%, #00f59b 35%, #06b6d4 70%, #ffffff 100%);
+      background-size: 220% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 5s linear infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% center; }
+      100% { background-position: 220% center; }
+    }
+
+    .hero-sub { color: var(--muted); font-size: clamp(0.92rem, 2.2vw, 1.02rem); max-width: 650px; margin: 0 auto 28px; }
+
+    .optimizer-panel {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
+      border-radius: 22px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      text-align: left;
+    }
+
+    .engine-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--green-bright);
+    }
+
+    .mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+
+    .mode-btn {
+      text-align: left;
+      min-height: 58px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.18s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    @media (hover: hover) {
+      .mode-btn:hover { border-color: var(--border-strong); color: var(--text); transform: translateY(-2px); }
+    }
+    .mode-btn.active {
+      background: rgba(0, 245, 155, 0.1);
+      border-color: rgba(0, 245, 155, 0.55);
+      color: var(--text);
+      box-shadow: 0 0 20px rgba(0, 245, 155, 0.12);
+    }
+
+    .mode-title { font-size: 0.84rem; font-weight: 700; margin-bottom: 2px; }
+    .mode-desc { font-size: 0.72rem; color: var(--dim); }
+    .mode-btn.active .mode-desc { color: var(--green-bright); }
+
+    .dropzone {
+      position: relative;
+      border: 1.5px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 34px 18px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--green-bright);
+      background: rgba(0, 245, 155, 0.05);
+      box-shadow: 0 0 28px rgba(0, 245, 155, 0.12);
+    }
+
+    .dropzone-icon {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 12px;
+      border-radius: 12px;
+      background: rgba(0, 245, 155, 0.12);
+      color: var(--green-bright);
+      display: grid;
+      place-items: center;
+      transition: transform 0.25s ease;
+    }
+
+    .dropzone:hover .dropzone-icon,
+    .dropzone.dragover .dropzone-icon { transform: translateY(-4px); }
+
+    .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .dropzone h3 { font-size: 1rem; margin-bottom: 4px; }
+    .dropzone p { font-size: 0.85rem; color: var(--muted); }
+
+    .file-box {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .file-box.visible { display: block; animation: fadeUp 0.35s ease-out both; }
+
+    .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .meta-item { background: rgba(0, 0, 0, 0.28); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+    .meta-label { font-size: 0.7rem; text-transform: uppercase; color: var(--dim); }
+    .meta-val { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; font-weight: 700; margin-top: 2px; word-break: break-word; }
+
+    .progress-wrap { display: none; margin-top: 14px; }
+    .progress-wrap.visible { display: block; animation: fadeUp 0.25s ease-out both; }
+
+    .progress-bg { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; margin-bottom: 8px; }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--green-bright), var(--cyan));
+      background-size: 200% 100%;
+      animation: gradientShift 2s linear infinite;
+      transition: width 0.25s ease;
+    }
+
+    .log-line { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); word-break: break-word; }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(0, 245, 155, 0.07);
+      border: 1px solid rgba(0, 245, 155, 0.28);
+    }
+
+    .result-box.visible { display: block; animation: fadeUp 0.35s ease-out both; }
+    .result-box.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.35); color: #fca5a5; }
+
+    .section { padding: 60px 0; }
+    .section-header { text-align: center; margin-bottom: 40px; }
+    .section-header h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 8px; }
+    .section-header p { color: var(--muted); font-size: clamp(0.9rem, 2vw, 1rem); }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+    .tiers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
+    .tier-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 26px;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease;
+    }
+    @media (hover: hover) {
+      .tier-card:hover { transform: translateY(-6px); border-color: var(--border-strong); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); }
+      .tier-card:hover .spec-box { border-color: rgba(255, 255, 255, 0.14); }
+    }
+    .tier-card.recommended { border-color: rgba(139, 92, 246, 0.65); background: linear-gradient(180deg, rgba(139, 92, 246, 0.12) 0%, rgba(16, 20, 29, 0.92) 45%); }
+    .tier-card.premium { border-color: rgba(245, 158, 11, 0.55); background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, rgba(16, 20, 29, 0.92) 45%); }
+
+    .rec-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff;
+      font-size: 0.72rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; white-space: nowrap;
+      box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+    }
+    .tier-card.premium .rec-badge { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #140d02; box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35); }
+    .tier-tag-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tier-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+    .free-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0, 245, 155, 0.12); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
+    .tier-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+    .tier-sub { font-size: 0.86rem; color: var(--muted); margin-bottom: 18px; }
+    .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .spec-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 11px; transition: border-color 0.2s; }
+    .spec-val { font-family: 'JetBrains Mono', monospace; font-size: 0.98rem; font-weight: 700; }
+    .spec-lbl { font-size: 0.72rem; color: var(--muted); }
+    .engine-box { display: flex; justify-content: space-between; padding: 11px 14px; border-radius: 12px; background: rgba(0, 245, 155, 0.06); border: 1px solid rgba(0, 245, 155, 0.2); margin-bottom: 16px; font-size: 0.85rem; }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; font-size: 0.86rem; }
+    .feature-list li::before { content: "✓ "; color: var(--green-bright); font-weight: 700; margin-right: 6px; }
+    .software-box { margin-top: auto; padding: 14px; border-radius: 14px; background: rgba(0, 0, 0, 0.28); border: 1px solid var(--border); margin-bottom: 18px; }
+    .software-title { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--dim); margin-bottom: 8px; }
+    .software-list { list-style: none; font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 5px; }
+
+    /* Contact & Donate Section */
+    .support-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+      align-items: stretch;
+    }
+
+    .support-card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
+      border-radius: 22px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease;
+    }
+
+    @media (hover: hover) {
+      .support-card:hover { transform: translateY(-5px); }
+      .support-card.tg-card:hover { border-color: rgba(42, 171, 238, 0.55); box-shadow: 0 20px 50px rgba(42, 171, 238, 0.14); }
+      .support-card.aba-card:hover { border-color: rgba(239, 68, 68, 0.55); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.14); }
+      .support-card.aba-card:hover .qr-frame { transform: scale(1.03); box-shadow: 0 22px 54px rgba(239, 68, 68, 0.22); }
+    }
+
+    .support-card.tg-card { background: linear-gradient(180deg, rgba(42, 171, 238, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(42, 171, 238, 0.28); }
+    .support-card.aba-card { background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(239, 68, 68, 0.28); }
+
+    .support-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; padding: 4px 11px; border-radius: 999px; margin-bottom: 10px; }
+    .tag-tg { background: rgba(42, 171, 238, 0.14); color: #67c7f5; border: 1px solid rgba(42, 171, 238, 0.35); }
+    .tag-aba { background: rgba(239, 68, 68, 0.14); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+    .support-card h3 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .support-card p { color: var(--muted); font-size: 0.92rem; }
+
+    .support-perks {
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      list-style: none;
+      font-size: 0.88rem;
+      color: #dbe2ee;
+    }
+
+    .support-perks li { display: flex; align-items: center; gap: 10px; }
+    .perk-dot { width: 20px; height: 20px; border-radius: 50%; background: rgba(42, 171, 238, 0.16); color: #67c7f5; display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
+    .support-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
+
+    .aba-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(0, 0, 0, 0.34); border: 1px solid var(--border-strong); border-radius: 14px; padding: 13px 16px; flex-wrap: wrap; }
+    .aba-label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+    .aba-num { font-family: 'JetBrains Mono', monospace; font-size: clamp(0.95rem, 3.2vw, 1.12rem); font-weight: 800; color: var(--text); margin-top: 2px; word-break: break-all; }
+
+    .qr-section { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 2px; }
+    .qr-frame {
+      width: 100%;
+      max-width: 225px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+      background: #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .qr-img { width: 100%; height: auto; display: block; }
+    .qr-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; text-align: center; }
+    .qr-fallback { display: none; color: #0f172a; font-size: 0.8rem; text-align: center; padding: 24px 12px; font-weight: 600; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0 calc(28px + env(safe-area-inset-bottom));
+      text-align: center;
+      color: var(--dim);
+      font-size: 0.84rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ======================================================
+       Tablet & iPad (768px - 1024px)
+       ====================================================== */
+    @media (max-width: 1024px) {
+      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+
+      .mode-grid { grid-template-columns: repeat(2, 1fr); }
+      .meta-grid { grid-template-columns: repeat(2, 1fr); }
+
+      .tiers-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      .tiers-grid .tier-card:last-child {
+        grid-column: 1 / -1;
+        max-width: 480px;
+        width: 100%;
+        margin: 0 auto;
+      }
+    }
+
+    /* ======================================================
+       Mobile Phones (<= 767px)
+       ====================================================== */
+    @media (max-width: 767px) {
+      .container {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+      }
+
+      .nav { height: 64px; }
+      .nav-actions .btn-secondary { display: none; }
+      .nav-actions .btn-tg { padding: 9px 14px; font-size: 0.84rem; min-height: 40px; }
+
+      .hero { padding: 36px 0 24px; }
+      .pill { font-size: 0.72rem; padding: 5px 12px; }
+      .optimizer-panel { padding: 16px; border-radius: 18px; }
+      .dropzone { padding: 26px 14px; }
+
+      .section { padding: 44px 0; }
+      .section-header { margin-bottom: 28px; }
+
+      .tiers-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
+      .tiers-grid .tier-card:last-child { grid-column: auto; max-width: none; }
+
+      .support-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; }
+      .support-card { padding: 20px; border-radius: 18px; }
+      .tier-card { padding: 22px; border-radius: 18px; }
+    }
+
+    /* ======================================================
+       Small Phones (<= 480px)
+       ====================================================== */
+    @media (max-width: 480px) {
+      .brand { font-size: 1rem; }
+      .mode-grid { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .qr-frame { max-width: 200px; }
+      .aba-box { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header>
+    <div class="container nav">
+      <a href="#" class="brand">
+        <span class="brand-badge">NHA</span>
+        <span>Nha Engine 2.0</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#optimizer">Optimizer</a>
+        <a href="#tiers">All Tiers (Free)</a>
+        <a href="#support">Contact &amp; Donate</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="#support" class="btn btn-secondary">Donate ABA</a>
+        <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
+        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#optimizer" class="m-link">Optimizer</a>
+      <a href="#tiers" class="m-link">All Tiers (Free)</a>
+      <a href="#support" class="m-link">Contact &amp; Donate</a>
+      <div class="mobile-menu-actions">
+        <a href="#support" class="btn btn-secondary">Donate ABA</a>
+        <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="optimizer">
+      <div class="container">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          ALL TIERS FREE • NHA ENGINE 2.0 • TIKTOK 1080P 60FPS
+        </div>
+        <h1>Optimize Videos For <span class="gradient-text">TikTok 1080p 60FPS</span></h1>
+        <p class="hero-sub">
+          Powered by Nha Engine 2.0 (FFmpeg). Converts any clip to clean 1080p 60 FPS H.264 High Profile (~14 Mbps) for sharp TikTok uploads.
+        </p>
+
+        <div class="optimizer-panel">
+          <div class="engine-status">
+            <span id="engineBadge">● Checking Nha Engine 2.0 Server...</span>
+            <span>All Tiers Unlocked ($0)</span>
+          </div>
+
+          <div class="mode-grid" id="modeGrid">
+            <button type="button" class="mode-btn active" data-mode="tiktok60">
+              <div class="mode-title">TikTok 1080p 60 FPS</div>
+              <div class="mode-desc">Best for TikTok • H.264 14M</div>
+            </button>
+            <button type="button" class="mode-btn" data-mode="faststart">
+              <div class="mode-title">Lossless Faststart</div>
+              <div class="mode-desc">Stream copy • 0 quality loss</div>
+            </button>
+            <button type="button" class="mode-btn" data-mode="fhd120">
+              <div class="mode-title">Full HD 120 FPS</div>
+              <div class="mode-desc">True 1920x1080 • 120 FPS</div>
+            </button>
+            <button type="button" class="mode-btn" data-mode="patch60">
+              <div class="mode-title">60 FPS Trick (2x)</div>
+              <div class="mode-desc">FFmpeg -itsscale 2 trick</div>
+            </button>
+          </div>
+
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/*" />
+            <div class="dropzone-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <h3>Drop your MP4 / MOV video here</h3>
+            <p>Or tap to choose a file — processes with Nha Engine 2.0 and downloads the output MP4</p>
+          </div>
+
+          <div class="file-box" id="fileBox">
+            <div class="meta-grid">
+              <div class="meta-item"><div class="meta-label">File Name</div><div class="meta-val" id="metaName">—</div></div>
+              <div class="meta-item"><div class="meta-label">Size</div><div class="meta-val" id="metaSize">—</div></div>
+              <div class="meta-item"><div class="meta-label">Resolution</div><div class="meta-val" id="metaRes">—</div></div>
+              <div class="meta-item"><div class="meta-label">Selected Mode</div><div class="meta-val" id="metaMode">tiktok60</div></div>
+            </div>
+
+            <button class="btn btn-primary" id="optimizeBtn" style="width: 100%;">
+              Optimize &amp; Download MP4
+            </button>
+
+            <div class="progress-wrap" id="progressWrap">
+              <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
+              <div class="log-line" id="logLine">Ready...</div>
+            </div>
+
+            <div class="result-box" id="resultBox"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tiers">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>All Tiers Unlocked — 100% Free</h2>
+          <p>Every feature from Member, Booster, and Premium is free right here with no limits.</p>
+        </div>
+
+        <div class="tiers-grid">
+          <article class="tier-card reveal" style="transition-delay: 0.05s;">
+            <div class="tier-tag-row"><span class="tier-tag">MEMBER</span><span class="free-pill">$0 • FREE</span></div>
+            <div class="tier-title">Free</div>
+            <div class="tier-sub">Instant access</div>
+            <div class="specs-grid">
+              <div class="spec-box"><div class="spec-val">100 MB</div><div class="spec-lbl">file size</div></div>
+              <div class="spec-box"><div class="spec-val">1080p</div><div class="spec-lbl">max resolution</div></div>
+              <div class="spec-box"><div class="spec-val">60 FPS</div><div class="spec-lbl">max framerate</div></div>
+              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
+            </div>
+            <div class="engine-box"><span>Nha Engine</span><strong>2.0</strong></div>
+            <ul class="feature-list">
+              <li>Priority queue</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+            </ul>
+            <div class="software-box">
+              <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
+              <ul class="software-list">
+                <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
+              </ul>
+            </div>
+            <button class="btn btn-secondary" style="width:100%" onclick="choosePreset('tiktok60')">Use TikTok 60 FPS</button>
+          </article>
+
+          <article class="tier-card recommended reveal" style="transition-delay: 0.15s;">
+            <div class="rec-badge">Free • Best for TikTok</div>
+            <div class="tier-tag-row"><span class="tier-tag">BOOSTER</span><span class="free-pill">$0 • FREE</span></div>
+            <div class="tier-title">Free</div>
+            <div class="tier-sub">No Nitro boost needed</div>
+            <div class="specs-grid">
+              <div class="spec-box"><div class="spec-val">200 MB</div><div class="spec-lbl">file size</div></div>
+              <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
+              <div class="spec-box"><div class="spec-val">60 FPS</div><div class="spec-lbl">max framerate</div></div>
+              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
+            </div>
+            <div class="engine-box"><span>Nha Engine</span><strong>2.0</strong></div>
+            <ul class="feature-list">
+              <li>Priority queue</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+            </ul>
+            <div class="software-box">
+              <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
+              <ul class="software-list">
+                <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
+              </ul>
+            </div>
+            <button class="btn btn-purple" style="width:100%" onclick="choosePreset('tiktok60')">Use TikTok 1080p 60 FPS</button>
+          </article>
+
+          <article class="tier-card premium reveal" style="transition-delay: 0.25s;">
+            <div class="rec-badge">Free • Full Unlimited</div>
+            <div class="tier-tag-row"><span class="tier-tag">PREMIUM</span><span class="free-pill">$0 • FREE</span></div>
+            <div class="tier-title">Free</div>
+            <div class="tier-sub">Full unlimited power</div>
+            <div class="specs-grid">
+              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">file size</div></div>
+              <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
+              <div class="spec-box"><div class="spec-val">120 FPS</div><div class="spec-lbl">max framerate</div></div>
+              <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">uploads</div></div>
+            </div>
+            <div class="engine-box"><span>Nha Engine</span><strong>2.0 + priority</strong></div>
+            <ul class="feature-list">
+              <li>Priority queue</li><li>skip FPS check</li><li>Fast Processing</li><li>Topaz preset</li><li>Handbrake preset</li><li>Colour correction preset</li>
+            </ul>
+            <div class="software-box">
+              <div class="software-title">PRESETS &amp; WORKFLOW FOR:</div>
+              <ul class="software-list">
+                <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
+              </ul>
+            </div>
+            <button class="btn btn-amber" style="width:100%" onclick="choosePreset('fhd120')">Use Full HD 120 FPS</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact & Donate -->
+    <section class="section" id="support">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>Contact &amp; Support</h2>
+          <p>Need help, presets, or want to support Nha Engine 2.0? Contact on Telegram or donate via ABA KHQR.</p>
+        </div>
+
+        <div class="support-grid">
+          <div class="support-card tg-card reveal" style="transition-delay: 0.08s;">
+            <div>
+              <span class="support-tag tag-tg">CONTACT OWNER</span>
+              <h3>Telegram Support</h3>
+              <p>Message directly on Telegram for help, custom presets, or feedback.</p>
+            </div>
+
+            <ul class="support-perks">
+              <li><span class="perk-dot">✓</span> Fast help with Nha Engine 2.0</li>
+              <li><span class="perk-dot">✓</span> TikTok 1080p 60FPS &amp; 4K export settings</li>
+              <li><span class="perk-dot">✓</span> Topaz, Handbrake &amp; color grading presets</li>
+              <li><span class="perk-dot">✓</span> Direct contact &amp; bug reports</li>
+            </ul>
+
+            <div class="support-bottom">
+              <div class="aba-box">
+                <div>
+                  <div class="aba-label">Telegram Username</div>
+                  <div class="aba-num">@ZenZyTwenty4</div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="copyText('@ZenZyTwenty4', this)">Copy</button>
+              </div>
+
+              <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg" style="width: 100%;">
+                Message @ZenZyTwenty4 on Telegram
+              </a>
+            </div>
+          </div>
+
+          <div class="support-card aba-card reveal" style="transition-delay: 0.18s;">
+            <div>
+              <span class="support-tag tag-aba">DONATE • ABA BANK</span>
+              <h3>Support Nha Engine 2.0</h3>
+              <p>Scan the ABA KHQR below or copy the account number. Thank you for supporting!</p>
+            </div>
+
+            <div class="aba-box">
+              <div>
+                <div class="aba-label">ABA Account (PANHA SAREAM)</div>
+                <div class="aba-num">015 262 971</div>
+              </div>
+              <button type="button" class="btn btn-secondary" onclick="copyText('015262971', this)">Copy</button>
+            </div>
+
+            <div class="qr-section">
+              <div class="qr-frame">
+                <img
+                  src="/aba-qr.jpg"
+                  alt="ABA KHQR - PANHA SAREAM"
+                  class="qr-img"
+                  onerror="if(!this.dataset.triedPng){this.dataset.triedPng='1';this.src='/aba-qr.png';}else{this.style.display='none';document.getElementById('qrFallback').style.display='block';}"
+                />
+                <div id="qrFallback" class="qr-fallback">
+                  Save your QR image as<br><code>public/aba-qr.jpg</code> (or <code>.png</code>)
+                </div>
+              </div>
+              <span class="qr-caption">Scan with ABA Mobile / KHQR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      Nha Engine 2.0 • Contact: <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" style="color:var(--green-bright); text-decoration:none;">@ZenZyTwenty4</a> • ABA Donate: 015 262 971
+    </div>
+  </footer>
+
+  <script>
+    let selectedMode = 'tiktok60';
+    let selectedFile = null;
+    let hasBackend = false;
+
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    const dropzone = document.getElementById('dropzone');
+    const videoInput = document.getElementById('videoInput');
+    const fileBox = document.getElementById('fileBox');
+    const metaName = document.getElementById('metaName');
+    const metaSize = document.getElementById('metaSize');
+    const metaRes = document.getElementById('metaRes');
+    const metaMode = document.getElementById('metaMode');
+    const optimizeBtn = document.getElementById('optimizeBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const logLine = document.getElementById('logLine');
+    const resultBox = document.getElementById('resultBox');
+    const engineBadge = document.getElementById('engineBadge');
+
+    // Mobile hamburger toggle
+    menuToggle.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Scroll reveal animation
+    const revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      revealEls.forEach(el => obs.observe(el));
+    } else {
+      revealEls.forEach(el => el.classList.add('in-view'));
+    }
+
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = old; }, 1500);
+      });
+    }
+
+    (async () => {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          hasBackend = true;
+          engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
+          return;
+        }
+      } catch {}
+      engineBadge.textContent = '⚠ Server not connected — run "npm start" at http://localhost:3000';
+      engineBadge.style.color = '#fca5a5';
+    })();
+
+    function setMode(mode) {
+      selectedMode = mode;
+      metaMode.textContent = mode;
+      modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+    }
+
+    function choosePreset(mode) {
+      setMode(mode);
+      document.getElementById('optimizer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => setMode(btn.dataset.mode));
+    });
+
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files?.[0]) loadFile(e.dataTransfer.files[0]);
+    });
+
+    videoInput.addEventListener('change', e => {
+      if (e.target.files?.[0]) loadFile(e.target.files[0]);
+    });
+
+    function loadFile(file) {
+      selectedFile = file;
+      fileBox.classList.add('visible');
+      resultBox.classList.remove('visible', 'error');
+      progressWrap.classList.remove('visible');
+
+      metaName.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
+      metaSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      metaRes.textContent = 'Checking...';
+
+      const url = URL.createObjectURL(file);
+      const vid = document.createElement('video');
+      vid.preload = 'metadata';
+      vid.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        metaRes.textContent = vid.videoWidth ? `${vid.videoWidth}x${vid.videoHeight}` : 'Server check';
+      };
+      vid.onerror = () => {
+        URL.revokeObjectURL(url);
+        metaRes.textContent = 'Server check';
+      };
+      vid.src = url;
+    }
+
+    optimizeBtn.addEventListener('click', () => {
+      if (!selectedFile) return;
+      if (!hasBackend) {
+        progressWrap.classList.add('visible');
+        showError('Server is not running. Open VS Code terminal, run "npm start", and open http://localhost:3000.');
+        return;
+      }
+
+      const jobId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+      let pollTimer = null;
+
+      optimizeBtn.disabled = true;
+      resultBox.classList.remove('visible', 'error');
+      progressWrap.classList.add('visible');
+      progressFill.style.width = '0%';
+      logLine.textContent = 'Uploading video...';
+
+      const formData = new FormData();
+      formData.append('mode', selectedMode);
+      formData.append('video', selectedFile);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `/api/optimize?jobId=${encodeURIComponent(jobId)}`, true);
+
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          progressFill.style.width = Math.round(pct * 0.3) + '%';
+          logLine.textContent = `Uploading... ${pct}%`;
+          if (e.loaded === e.total && !pollTimer) {
+            logLine.textContent = 'Starting FFmpeg encoding...';
+            pollTimer = setInterval(async () => {
+              try {
+                const r = await fetch(`/api/progress/${encodeURIComponent(jobId)}`);
+                const j = await r.json();
+                progressFill.style.width = (30 + Math.round((j.pct || 0) * 0.7)) + '%';
+                if (j.msg) logLine.textContent = j.msg;
+              } catch {}
+            }, 500);
+          }
+        }
+      };
+
+      xhr.onload = () => {
+        if (pollTimer) clearInterval(pollTimer);
+        optimizeBtn.disabled = false;
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status !== 200 || !data.success) {
+            return showError(data.error || 'Optimization failed.');
+          }
+          progressFill.style.width = '100%';
+          logLine.textContent = 'Complete! Downloading MP4...';
+          resultBox.classList.remove('error');
+          resultBox.classList.add('visible');
+          resultBox.innerHTML = `
+            <div style="font-weight:700; color:#00f59b; margin-bottom:6px;">Ready: ${data.downloadName}</div>
+            <div style="font-size:0.84rem; color:#cbd5e1; margin-bottom:12px;">
+              Input: ${data.inputMeta.width}x${data.inputMeta.height} • ${data.inputMeta.fps} FPS • ${data.inputMeta.videoCodec.toUpperCase()} • ${data.inputMeta.sizeMB} MB<br>
+              Output: ${data.outputMeta.width}x${data.outputMeta.height} • ${data.outputMeta.fps} FPS • ${data.outputMeta.videoCodec.toUpperCase()} • ${data.outputMeta.sizeMB} MB
+            </div>
+            <a href="${data.downloadUrl}" class="btn btn-primary" style="width:100%;">Download MP4 Again</a>
+          `;
+          const a = document.createElement('a');
+          a.href = data.downloadUrl;
+          a.download = data.downloadName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } catch {
+          showError('Unexpected server response.');
+        }
+      };
+
+      xhr.onerror = () => {
+        if (pollTimer) clearInterval(pollTimer);
+        optimizeBtn.disabled = false;
+        showError('Network error while contacting server.');
+      };
+
+      xhr.send(formData);
+    });
+
+    function showError(msg) {
+      progressFill.style.width = '0%';
+      logLine.textContent = 'Error';
+      resultBox.classList.add('visible', 'error');
+      resultBox.textContent = msg;
+    }
+  </script>
+</body>
+</html>
