@@ -621,15 +621,37 @@
       creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
       vip: { name: 'VIP', maxMB: Infinity, dailyLimit: Infinity }
     };
-    const FALLBACK_CREATOR_KEYS = new Set([
-      'NHA-CR-4K9M2P', 'NHA-CR-7X3W8Q', 'NHA-CR-2R6N5T', 'NHA-CR-9H4V3Z', 'NHA-CR-5D8J7B',
-      'NHA-CR-3F2Y6C', 'NHA-CR-8P5G4W', 'NHA-CR-6T9K3M', 'NHA-CR-4N7R8H', 'NHA-CR-2Q5X9D',
+
+    function parseRule(specStr) {
+      const spec = (specStr || '').trim();
+      if (!spec || spec.toLowerCase() === 'lifetime') return { type: 'lifetime' };
+      if (/^\d+d$/i.test(spec)) {
+        const days = Number(spec.slice(0, -1));
+        return { type: 'duration', days, ms: days * 86400 * 1000 };
+      }
+      if (/^\d{4}-\d{2}-\d{2}$/.test(spec)) return { type: 'date', date: spec };
+      return { type: 'lifetime' };
+    }
+
+    function buildKeyMap(arr) {
+      const map = new Map();
+      for (const item of arr) {
+        const [k, spec] = item.split('@');
+        if (k) map.set(k.trim(), parseRule(spec));
+      }
+      return map;
+    }
+
+    const FALLBACK_CREATOR_MAP = buildKeyMap([
+      'NHA-CR-4K9M2P@15d', 'NHA-CR-7X3W8Q@15d', 'NHA-CR-2R6N5T@15d', 'NHA-CR-9H4V3Z@15d', 'NHA-CR-5D8J7B@15d',
+      'NHA-CR-3F2Y6C@15d', 'NHA-CR-8P5G4W@15d', 'NHA-CR-6T9K3M@15d', 'NHA-CR-4N7R8H@15d', 'NHA-CR-2Q5X9D@15d',
       'NHA-CR-7W3B6F', 'NHA-CR-9M8C4P', 'NHA-CR-5K2Z7V', 'NHA-CR-3J6H9N', 'NHA-CR-8G4T2R',
       'NHA-CR-6V9D5X', 'NHA-CR-4B3Q8K', 'NHA-CR-7Y5P2W', 'NHA-CR-9C6M3J', 'NHA-CR-2Z8F4G'
     ]);
-    const FALLBACK_VIP_KEYS = new Set([
-      'NHA-VP-8K4M9R', 'NHA-VP-3W7X2P', 'NHA-VP-6N5Q8T', 'NHA-VP-9Z2H4F', 'NHA-VP-5C8B7D',
-      'NHA-VP-4R6J3M', 'NHA-VP-7T9V5K', 'NHA-VP-2P3G8W', 'NHA-VP-8F5D6Y', 'NHA-VP-6M2K9N',
+
+    const FALLBACK_VIP_MAP = buildKeyMap([
+      'NHA-VP-8K4M9R@30d', 'NHA-VP-3W7X2P@30d', 'NHA-VP-6N5Q8T@30d', 'NHA-VP-9Z2H4F@30d', 'NHA-VP-5C8B7D@30d',
+      'NHA-VP-4R6J3M@30d', 'NHA-VP-7T9V5K@30d', 'NHA-VP-2P3G8W@30d', 'NHA-VP-8F5D6Y@30d', 'NHA-VP-6M2K9N@30d',
       'NHA-VP-3X7C4Q', 'NHA-VP-9B8R2H', 'NHA-VP-5W4P7Z', 'NHA-VP-4H9T6G', 'NHA-VP-7J3N8V',
       'NHA-VP-2D6F5B', 'NHA-VP-8Q5Y3K', 'NHA-VP-6K9W4M', 'NHA-VP-3G2Z7R', 'NHA-VP-9V8J5X'
     ]);
@@ -640,6 +662,7 @@
     let hasBackend = false;
     let vipKey = localStorage.getItem('nha_vip_key') || '';
     let currentPlan = 'free';
+    let currentTimeLabel = 'Lifetime';
     let serverRemaining = null;
 
     const menuToggle = document.getElementById('menuToggle');
@@ -705,6 +728,45 @@
       return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
     }
 
+    function formatRemaining(expiresAtMs) {
+      if (!expiresAtMs) return 'Lifetime';
+      const diff = expiresAtMs - Date.now();
+      if (diff <= 0) return 'Expired';
+      const totalMins = Math.floor(diff / 60000);
+      const days = Math.floor(totalMins / 1440);
+      const hours = Math.floor((totalMins % 1440) / 60);
+      const mins = totalMins % 60;
+      if (days > 0) return `${days}d ${hours}h left`;
+      if (hours > 0) return `${hours}h ${mins}m left`;
+      return `${Math.max(1, mins)}m left`;
+    }
+
+    function checkLocalKey(keyStr) {
+      const key = (keyStr || '').trim();
+      let plan = null, rule = null;
+      if (FALLBACK_VIP_MAP.has(key)) { plan = 'vip'; rule = FALLBACK_VIP_MAP.get(key); }
+      else if (FALLBACK_CREATOR_MAP.has(key)) { plan = 'creator'; rule = FALLBACK_CREATOR_MAP.get(key); }
+      if (!plan) return { plan: 'free', expired: false, label: null };
+
+      if (rule.type === 'lifetime') return { plan, expired: false, label: 'Lifetime' };
+
+      if (rule.type === 'date') {
+        const endMs = Date.parse(`${rule.date}T23:59:59+07:00`);
+        if (Date.now() > endMs) return { plan: 'free', expired: true, label: 'Expired' };
+        return { plan, expired: false, label: formatRemaining(endMs) };
+      }
+
+      let acts = {};
+      try { acts = JSON.parse(localStorage.getItem('nha_key_activations') || '{}'); } catch {}
+      if (!acts[key]) {
+        acts[key] = Date.now();
+        localStorage.setItem('nha_key_activations', JSON.stringify(acts));
+      }
+      const endMs = acts[key] + rule.ms;
+      if (Date.now() > endMs) return { plan: 'free', expired: true, label: 'Expired' };
+      return { plan, expired: false, label: formatRemaining(endMs) };
+    }
+
     function getLocalQuota() {
       const today = getTodayKey();
       try {
@@ -733,17 +795,18 @@
 
     function refreshQuotaUI() {
       vipBar.classList.remove('vip-active', 'creator-active');
+      const label = currentTimeLabel || 'Lifetime';
       if (currentPlan === 'vip') {
         vipBar.classList.add('vip-active');
-        quotaBadge.textContent = '★ VIP UNLOCKED: Unlimited Size • Unlimited Uploads';
-        limitSummary.textContent = 'VIP Plan: Unlimited';
+        quotaBadge.textContent = `★ VIP UNLOCKED: Unlimited • ${label}`;
+        limitSummary.textContent = `VIP (${label})`;
         vipInput.style.display = 'none';
         vipBtn.textContent = 'Remove Key';
       } else if (currentPlan === 'creator') {
         vipBar.classList.add('creator-active');
         const rem = getRemainingToday();
-        quotaBadge.textContent = `★ CREATOR: ${rem} / ${PLANS.creator.dailyLimit} left today • Max ${PLANS.creator.maxMB} MB`;
-        limitSummary.textContent = `Creator: ${PLANS.creator.maxMB} MB max • ${PLANS.creator.dailyLimit}/day`;
+        quotaBadge.textContent = `★ CREATOR (${label}): ${rem} / ${PLANS.creator.dailyLimit} left • Max ${PLANS.creator.maxMB} MB`;
+        limitSummary.textContent = `Creator (${label}): ${PLANS.creator.maxMB} MB`;
         vipInput.style.display = 'none';
         vipBtn.textContent = 'Remove Key';
       } else {
@@ -758,13 +821,14 @@
     function showVipMsg(text, ok = false) {
       vipMsg.textContent = text;
       vipMsg.className = ok ? 'vip-msg visible ok' : 'vip-msg visible';
-      setTimeout(() => vipMsg.classList.remove('visible'), 4000);
+      setTimeout(() => vipMsg.classList.remove('visible'), 4500);
     }
 
     vipForm.addEventListener('submit', async e => {
       e.preventDefault();
       if (currentPlan !== 'free') {
         currentPlan = 'free';
+        currentTimeLabel = null;
         vipKey = '';
         localStorage.removeItem('nha_vip_key');
         vipInput.value = '';
@@ -789,9 +853,9 @@
           const data = await r.json();
           if (r.ok && data.valid) {
             currentPlan = data.plan || 'vip';
+            currentTimeLabel = data.timeLabel || 'Lifetime';
             vipKey = entered;
             localStorage.setItem('nha_vip_key', entered);
-            // Refresh server remaining quota for new plan
             try {
               const hr = await fetch('/api/health', { headers: { 'x-vip-key': entered } });
               const hd = await hr.json();
@@ -806,18 +870,21 @@
           showVipMsg('Could not verify Key.', false);
         }
       } else {
-        if (FALLBACK_VIP_KEYS.has(entered)) {
-          currentPlan = 'vip';
-        } else if (FALLBACK_CREATOR_KEYS.has(entered)) {
-          currentPlan = 'creator';
-        } else {
+        const res = checkLocalKey(entered);
+        if (res.expired) {
+          showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 on Telegram to renew.', false);
+          return;
+        }
+        if (res.plan === 'free') {
           showVipMsg('Invalid Key. Contact @ZenZyTwenty4 on Telegram.', false);
           return;
         }
+        currentPlan = res.plan;
+        currentTimeLabel = res.label;
         vipKey = entered;
         localStorage.setItem('nha_vip_key', entered);
         refreshQuotaUI();
-        showVipMsg(`${PLANS[currentPlan].name} Unlocked!`, true);
+        showVipMsg(`${PLANS[currentPlan].name} Unlocked (${currentTimeLabel})!`, true);
       }
     });
 
@@ -835,7 +902,12 @@
             if (data && data.ffmpegReady === true) {
               hasBackend = true;
               currentPlan = data.plan || 'free';
-              if (currentPlan === 'free' && vipKey) localStorage.removeItem('nha_vip_key');
+              currentTimeLabel = data.timeLabel || 'Lifetime';
+              if (currentPlan === 'free' && vipKey) {
+                localStorage.removeItem('nha_vip_key');
+                vipKey = '';
+                if (data.expired) showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 to renew.', false);
+              }
               serverRemaining = typeof data.remainingToday === 'number' ? data.remainingToday : null;
               engineBadge.textContent = '● Nha Engine 2.0 FFmpeg Server: Connected';
               refreshQuotaUI();
@@ -846,9 +918,14 @@
       }
 
       hasBackend = false;
-      if (vipKey && FALLBACK_VIP_KEYS.has(vipKey)) currentPlan = 'vip';
-      else if (vipKey && FALLBACK_CREATOR_KEYS.has(vipKey)) currentPlan = 'creator';
-      else currentPlan = 'free';
+      const localRes = vipKey ? checkLocalKey(vipKey) : { plan: 'free', expired: false, label: null };
+      currentPlan = localRes.plan;
+      currentTimeLabel = localRes.label;
+      if (currentPlan === 'free' && vipKey) {
+        localStorage.removeItem('nha_vip_key');
+        vipKey = '';
+        if (localRes.expired) showVipMsg('Your Key has expired! Contact @ZenZyTwenty4 to renew.', false);
+      }
       setMode('faststart');
       engineBadge.textContent = '● Nha Engine 2.0 Browser Core: Ready (Faststart & FPS Patch)';
       refreshQuotaUI();
@@ -964,9 +1041,7 @@
         await new Promise(r => setTimeout(r, 60));
         const res = optimizeMp4InBrowser(buf, selectedMode);
 
-        if (currentPlan !== 'vip') {
-          incrementLocalQuota();
-        }
+        if (currentPlan !== 'vip') incrementLocalQuota();
         refreshQuotaUI();
 
         progressFill.style.width = '100%';

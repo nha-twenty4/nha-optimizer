@@ -11,32 +11,64 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
-// ====== PLAN LIMITS & KEYS ======
+// ====== PLAN LIMITS & KEYS (KEY = Lifetime | KEY@15d = 15 days from first use | KEY@YYYY-MM-DD = Fixed date) ======
 const PLANS = {
   free: { name: 'Free', maxMB: 250, dailyLimit: 5 },
   creator: { name: 'Creator', maxMB: 600, dailyLimit: 15 },
   vip: { name: 'VIP', maxMB: null, dailyLimit: null }
 };
 
-const CREATOR_KEYS = new Set(
-  (process.env.CREATOR_KEYS ||
-    'NHA-CR-4K9M2P,NHA-CR-7X3W8Q,NHA-CR-2R6N5T,NHA-CR-9H4V3Z,NHA-CR-5D8J7B,NHA-CR-3F2Y6C,NHA-CR-8P5G4W,NHA-CR-6T9K3M,NHA-CR-4N7R8H,NHA-CR-2Q5X9D,NHA-CR-7W3B6F,NHA-CR-9M8C4P,NHA-CR-5K2Z7V,NHA-CR-3J6H9N,NHA-CR-8G4T2R,NHA-CR-6V9D5X,NHA-CR-4B3Q8K,NHA-CR-7Y5P2W,NHA-CR-9C6M3J,NHA-CR-2Z8F4G')
-    .split(',')
-    .map(k => k.trim())
-    .filter(Boolean)
+function parseRule(specStr) {
+  const spec = (specStr || '').trim();
+  if (!spec || spec.toLowerCase() === 'lifetime') return { type: 'lifetime' };
+  if (/^\d+d$/i.test(spec)) {
+    const days = Number(spec.slice(0, -1));
+    return { type: 'duration', days, ms: days * 86400 * 1000 };
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(spec)) return { type: 'date', date: spec };
+  return { type: 'lifetime' };
+}
+
+function buildKeyMap(rawStr) {
+  const map = new Map();
+  for (const item of rawStr.split(',')) {
+    const clean = item.trim();
+    if (!clean) continue;
+    const [keyPart, specPart] = clean.split('@');
+    const key = (keyPart || '').trim();
+    if (key) map.set(key, parseRule(specPart));
+  }
+  return map;
+}
+
+const CREATOR_KEY_MAP = buildKeyMap(
+  process.env.CREATOR_KEYS ||
+    [
+      // 15-day Creator Keys (starts counting 15 days when first activated)
+      'NHA-CR-4K9M2P@15d', 'NHA-CR-7X3W8Q@15d', 'NHA-CR-2R6N5T@15d', 'NHA-CR-9H4V3Z@15d', 'NHA-CR-5D8J7B@15d',
+      'NHA-CR-3F2Y6C@15d', 'NHA-CR-8P5G4W@15d', 'NHA-CR-6T9K3M@15d', 'NHA-CR-4N7R8H@15d', 'NHA-CR-2Q5X9D@15d',
+      // Lifetime Creator Keys
+      'NHA-CR-7W3B6F', 'NHA-CR-9M8C4P', 'NHA-CR-5K2Z7V', 'NHA-CR-3J6H9N', 'NHA-CR-8G4T2R',
+      'NHA-CR-6V9D5X', 'NHA-CR-4B3Q8K', 'NHA-CR-7Y5P2W', 'NHA-CR-9C6M3J', 'NHA-CR-2Z8F4G'
+    ].join(',')
 );
 
-const VIP_KEYS = new Set(
-  (process.env.VIP_KEYS ||
-    'NHA-VP-8K4M9R,NHA-VP-3W7X2P,NHA-VP-6N5Q8T,NHA-VP-9Z2H4F,NHA-VP-5C8B7D,NHA-VP-4R6J3M,NHA-VP-7T9V5K,NHA-VP-2P3G8W,NHA-VP-8F5D6Y,NHA-VP-6M2K9N,NHA-VP-3X7C4Q,NHA-VP-9B8R2H,NHA-VP-5W4P7Z,NHA-VP-4H9T6G,NHA-VP-7J3N8V,NHA-VP-2D6F5B,NHA-VP-8Q5Y3K,NHA-VP-6K9W4M,NHA-VP-3G2Z7R,NHA-VP-9V8J5X')
-    .split(',')
-    .map(k => k.trim())
-    .filter(Boolean)
+const VIP_KEY_MAP = buildKeyMap(
+  process.env.VIP_KEYS ||
+    [
+      // 30-day VIP Keys (starts counting 30 days when first activated)
+      'NHA-VP-8K4M9R@30d', 'NHA-VP-3W7X2P@30d', 'NHA-VP-6N5Q8T@30d', 'NHA-VP-9Z2H4F@30d', 'NHA-VP-5C8B7D@30d',
+      'NHA-VP-4R6J3M@30d', 'NHA-VP-7T9V5K@30d', 'NHA-VP-2P3G8W@30d', 'NHA-VP-8F5D6Y@30d', 'NHA-VP-6M2K9N@30d',
+      // Lifetime VIP Keys
+      'NHA-VP-3X7C4Q', 'NHA-VP-9B8R2H', 'NHA-VP-5W4P7Z', 'NHA-VP-4H9T6G', 'NHA-VP-7J3N8V',
+      'NHA-VP-2D6F5B', 'NHA-VP-8Q5Y3K', 'NHA-VP-6K9W4M', 'NHA-VP-3G2Z7R', 'NHA-VP-9V8J5X'
+    ].join(',')
 );
-// =================================
+// ===================================================================================================================
 
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const OUTPUT_DIR = path.join(__dirname, 'outputs');
+const ACTIVATIONS_FILE = path.join(__dirname, 'key-activations.json');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
@@ -44,15 +76,30 @@ const readyFiles = new Map();
 const jobs = new Map();
 const dailyUsage = new Map();
 
+// Load & save key activation timestamps
+const activations = new Map();
+try {
+  if (fs.existsSync(ACTIVATIONS_FILE)) {
+    const raw = JSON.parse(fs.readFileSync(ACTIVATIONS_FILE, 'utf8'));
+    for (const [k, ts] of Object.entries(raw)) {
+      if (typeof ts === 'number') activations.set(k, ts);
+    }
+  }
+} catch {}
+
+function saveActivations() {
+  try {
+    fs.writeFileSync(ACTIVATIONS_FILE, JSON.stringify(Object.fromEntries(activations), null, 2));
+  } catch {}
+}
+
 function getCambodiaDateKey() {
   return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
 function getClientIp(req) {
   const fwd = req.headers['x-forwarded-for'];
-  if (typeof fwd === 'string' && fwd.length > 0) {
-    return fwd.split(',')[0].trim();
-  }
+  if (typeof fwd === 'string' && fwd.length > 0) return fwd.split(',')[0].trim();
   return req.ip || 'unknown';
 }
 
@@ -67,16 +114,64 @@ function getUsage(ip) {
   return entry;
 }
 
-function getPlanFromKey(keyStr) {
-  const key = (keyStr || '').toString().trim();
-  if (VIP_KEYS.has(key)) return 'vip';
-  if (CREATOR_KEYS.has(key)) return 'creator';
-  return 'free';
+function formatRemaining(expiresAtMs) {
+  if (!expiresAtMs) return 'Lifetime';
+  const diff = expiresAtMs - Date.now();
+  if (diff <= 0) return 'Expired';
+  const totalMins = Math.floor(diff / 60000);
+  const days = Math.floor(totalMins / 1440);
+  const hours = Math.floor((totalMins % 1440) / 60);
+  const mins = totalMins % 60;
+  if (days > 0) return `${days}d ${hours}h left`;
+  if (hours > 0) return `${hours}h ${mins}m left`;
+  return `${Math.max(1, mins)}m left`;
 }
 
-function getRequestPlan(req) {
-  const key = req.headers['x-vip-key'] || req.query.vipKey || '';
-  return getPlanFromKey(key);
+function checkKey(keyStr) {
+  const key = (keyStr || '').toString().trim();
+  let plan = null;
+  let rule = null;
+
+  if (VIP_KEY_MAP.has(key)) {
+    plan = 'vip';
+    rule = VIP_KEY_MAP.get(key);
+  } else if (CREATOR_KEY_MAP.has(key)) {
+    plan = 'creator';
+    rule = CREATOR_KEY_MAP.get(key);
+  }
+
+  if (!plan) {
+    return { plan: 'free', valid: false, expired: false, expiresAtMs: null, label: null };
+  }
+
+  if (rule.type === 'lifetime') {
+    return { plan, valid: true, expired: false, expiresAtMs: null, label: 'Lifetime' };
+  }
+
+  if (rule.type === 'date') {
+    const endMs = Date.parse(`${rule.date}T23:59:59+07:00`);
+    if (Date.now() > endMs) {
+      return { plan: 'free', valid: false, expired: true, expiresAtMs: endMs, label: 'Expired' };
+    }
+    return { plan, valid: true, expired: false, expiresAtMs: endMs, label: formatRemaining(endMs) };
+  }
+
+  // Duration key (starts counting when first entered/used)
+  let activatedAt = activations.get(key);
+  if (!activatedAt) {
+    activatedAt = Date.now();
+    activations.set(key, activatedAt);
+    saveActivations();
+  }
+  const expiresAtMs = activatedAt + rule.ms;
+  if (Date.now() > expiresAtMs) {
+    return { plan: 'free', valid: false, expired: true, expiresAtMs, label: 'Expired' };
+  }
+  return { plan, valid: true, expired: false, expiresAtMs, label: formatRemaining(expiresAtMs) };
+}
+
+function getRequestKeyCheck(req) {
+  return checkKey(req.headers['x-vip-key'] || req.query.vipKey || '');
 }
 
 const storage = multer.diskStorage({
@@ -108,15 +203,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/health', (req, res) => {
   const ffmpegReady = Boolean(ffmpegPath && fs.existsSync(ffmpegPath));
-  const plan = getRequestPlan(req);
-  const rules = PLANS[plan];
+  const keyStatus = getRequestKeyCheck(req);
+  const rules = PLANS[keyStatus.plan];
   const usage = getUsage(getClientIp(req));
 
   res.json({
     ok: ffmpegReady,
     ffmpegReady,
     engine: 'Nha Engine 2.0',
-    plan,
+    plan: keyStatus.plan,
+    expiresAtMs: keyStatus.expiresAtMs,
+    timeLabel: keyStatus.label,
+    expired: keyStatus.expired,
     maxFileMB: rules.maxMB,
     dailyLimit: rules.dailyLimit,
     usedToday: usage.count,
@@ -125,33 +223,40 @@ app.get('/api/health', (req, res) => {
 });
 
 app.post('/api/vip/verify', (req, res) => {
-  const plan = getPlanFromKey(req.body?.key);
-  if (plan === 'vip') {
+  const status = checkKey(req.body?.key);
+  if (status.expired) {
+    return res.status(401).json({
+      valid: false,
+      expired: true,
+      error: 'Your Key has expired! Contact @ZenZyTwenty4 on Telegram to renew.'
+    });
+  }
+  if (status.plan === 'vip') {
     return res.json({
       valid: true,
       plan: 'vip',
-      maxFileMB: null,
-      dailyLimit: null,
-      message: 'VIP Unlocked! Unlimited file size & uploads active.'
+      expiresAtMs: status.expiresAtMs,
+      timeLabel: status.label,
+      message: `VIP Unlocked (${status.label})! Unlimited size & uploads active.`
     });
   }
-  if (plan === 'creator') {
+  if (status.plan === 'creator') {
     return res.json({
       valid: true,
       plan: 'creator',
-      maxFileMB: PLANS.creator.maxMB,
-      dailyLimit: PLANS.creator.dailyLimit,
-      message: `Creator Unlocked! Max ${PLANS.creator.maxMB} MB & ${PLANS.creator.dailyLimit} uploads/day.`
+      expiresAtMs: status.expiresAtMs,
+      timeLabel: status.label,
+      message: `Creator Unlocked (${status.label})! Max ${PLANS.creator.maxMB} MB & ${PLANS.creator.dailyLimit}/day.`
     });
   }
   return res.status(401).json({ valid: false, error: 'Invalid Key. Contact @ZenZyTwenty4 on Telegram.' });
 });
 
 app.post('/api/quota/consume', (req, res) => {
-  const plan = getRequestPlan(req);
-  const rules = PLANS[plan];
+  const status = getRequestKeyCheck(req);
+  const rules = PLANS[status.plan];
   if (rules.dailyLimit === null) {
-    return res.json({ allowed: true, plan, remainingToday: null });
+    return res.json({ allowed: true, plan: status.plan, remainingToday: null });
   }
   const usage = getUsage(getClientIp(req));
   if (usage.count >= rules.dailyLimit) {
@@ -163,7 +268,7 @@ app.post('/api/quota/consume', (req, res) => {
   usage.count += 1;
   res.json({
     allowed: true,
-    plan,
+    plan: status.plan,
     usedToday: usage.count,
     remainingToday: Math.max(0, rules.dailyLimit - usage.count)
   });
@@ -232,11 +337,7 @@ function parseFps(rateStr) {
 
 async function probeVideo(filePath) {
   const { stdout } = await runExec(ffprobePath, [
-    '-v', 'quiet',
-    '-print_format', 'json',
-    '-show_format',
-    '-show_streams',
-    filePath
+    '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', filePath
   ]);
   const info = JSON.parse(stdout);
   const videoStream = (info.streams || []).find(s => s.codec_type === 'video');
@@ -244,9 +345,7 @@ async function probeVideo(filePath) {
 
   const sizeBytes = Number(info.format?.size || fs.statSync(filePath).size || 0);
   const duration = Number(info.format?.duration || 0);
-  const bitrateMbps = info.format?.bit_rate
-    ? Number((Number(info.format.bit_rate) / 1_000_000).toFixed(2))
-    : 0;
+  const bitrateMbps = info.format?.bit_rate ? Number((Number(info.format.bit_rate) / 1_000_000).toFixed(2)) : 0;
 
   return {
     width: videoStream?.width || 0,
@@ -261,15 +360,13 @@ async function probeVideo(filePath) {
 }
 
 function safeUnlink(filePath) {
-  if (filePath && fs.existsSync(filePath)) {
-    fs.unlink(filePath, () => {});
-  }
+  if (filePath && fs.existsSync(filePath)) fs.unlink(filePath, () => {});
 }
 
 app.post('/api/optimize', (req, res) => {
   const ip = getClientIp(req);
-  const plan = getRequestPlan(req);
-  const rules = PLANS[plan];
+  const keyStatus = getRequestKeyCheck(req);
+  const rules = PLANS[keyStatus.plan];
   const usage = getUsage(ip);
 
   if (rules.dailyLimit !== null && usage.count >= rules.dailyLimit) {
@@ -278,7 +375,7 @@ app.post('/api/optimize', (req, res) => {
     });
   }
 
-  uploaders[plan].single('video')(req, res, async err => {
+  uploaders[keyStatus.plan].single('video')(req, res, async err => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({
@@ -294,8 +391,7 @@ app.post('/api/optimize', (req, res) => {
     const jobId = req.query.jobId || crypto.randomUUID();
     const fileId = crypto.randomUUID();
     const baseName = path.basename(req.file.originalname, path.extname(req.file.originalname))
-      .replace(/[^a-zA-Z0-9_-]/g, '_')
-      .slice(0, 60) || 'video';
+      .replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60) || 'video';
     const downloadName = `NHA_${mode}_${baseName}.mp4`;
     const outputPath = path.join(OUTPUT_DIR, `${fileId}.mp4`);
 
@@ -310,13 +406,9 @@ app.post('/api/optimize', (req, res) => {
       const mp4CompatAudio = new Set(['aac', 'mp3', 'ac3', 'eac3', 'alac', 'flac', 'opus']);
       const copyAudioArgs = !inputMeta.audioCodec
         ? ['-an']
-        : mp4CompatAudio.has(inputMeta.audioCodec.toLowerCase())
-          ? ['-c:a', 'copy']
-          : ['-c:a', 'aac', '-b:a', '192k'];
+        : mp4CompatAudio.has(inputMeta.audioCodec.toLowerCase()) ? ['-c:a', 'copy'] : ['-c:a', 'aac', '-b:a', '192k'];
 
-      const encodeAudioArgs = inputMeta.audioCodec
-        ? ['-c:a', 'aac', '-b:a', '192k', '-ar', '48000']
-        : ['-an'];
+      const encodeAudioArgs = inputMeta.audioCodec ? ['-c:a', 'aac', '-b:a', '192k', '-ar', '48000'] : ['-an'];
 
       const isLandscape = inputMeta.width >= inputMeta.height;
       const targetW = isLandscape ? 1920 : 1080;
@@ -326,26 +418,16 @@ app.post('/api/optimize', (req, res) => {
       let ffmpegArgs;
       if (mode === 'tiktok60') {
         ffmpegArgs = [
-          '-y', '-i', inputPath,
-          '-vf', vf,
-          '-r', '60',
-          '-c:v', 'libx264', '-profile:v', 'high', '-level:v', '4.2',
-          '-preset', 'veryfast',
-          '-crf', '18', '-maxrate', '16M', '-bufsize', '32M',
-          '-pix_fmt', 'yuv420p',
-          ...encodeAudioArgs,
-          '-movflags', '+faststart',
-          outputPath
+          '-y', '-i', inputPath, '-vf', vf, '-r', '60',
+          '-c:v', 'libx264', '-profile:v', 'high', '-level:v', '4.2', '-preset', 'veryfast',
+          '-crf', '18', '-maxrate', '16M', '-bufsize', '32M', '-pix_fmt', 'yuv420p',
+          ...encodeAudioArgs, '-movflags', '+faststart', outputPath
         ];
       } else if (mode === 'fhd120') {
         ffmpegArgs = [
-          '-y', '-i', inputPath,
-          '-vf', vf,
-          '-r', '120',
+          '-y', '-i', inputPath, '-vf', vf, '-r', '120',
           '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '17', '-pix_fmt', 'yuv420p',
-          ...encodeAudioArgs,
-          '-movflags', '+faststart',
-          outputPath
+          ...encodeAudioArgs, '-movflags', '+faststart', outputPath
         ];
       } else if (mode === 'patch60') {
         ffmpegArgs = ['-y', '-itsscale', '2', '-i', inputPath, '-c:v', 'copy', ...copyAudioArgs, '-movflags', '+faststart', outputPath];
@@ -359,15 +441,9 @@ app.post('/api/optimize', (req, res) => {
       safeUnlink(inputPath);
       setTimeout(() => jobs.delete(jobId), 60_000);
 
-      if (rules.dailyLimit !== null) {
-        usage.count += 1;
-      }
+      if (rules.dailyLimit !== null) usage.count += 1;
 
-      readyFiles.set(fileId, {
-        filePath: outputPath,
-        downloadName,
-        createdAt: Date.now()
-      });
+      readyFiles.set(fileId, { filePath: outputPath, downloadName, createdAt: Date.now() });
 
       res.json({
         success: true,
@@ -376,7 +452,7 @@ app.post('/api/optimize', (req, res) => {
         downloadUrl: `/api/download/${fileId}`,
         inputMeta,
         outputMeta,
-        plan,
+        plan: keyStatus.plan,
         remainingToday: rules.dailyLimit === null ? null : Math.max(0, rules.dailyLimit - usage.count)
       });
     } catch (procErr) {
@@ -409,7 +485,6 @@ setInterval(() => {
 const server = app.listen(PORT, () => {
   const ok = ffmpegPath && fs.existsSync(ffmpegPath);
   console.log(`Nha Engine 2.0 running at http://localhost:${PORT}`);
-  console.log(`Plans: Free=${PLANS.free.maxMB}MB (${PLANS.free.dailyLimit}/day) | Creator=${PLANS.creator.maxMB}MB (${PLANS.creator.dailyLimit}/day) | VIP=Unlimited`);
   console.log(ok ? 'FFmpeg binary: READY' : 'FFmpeg binary MISSING! Run: node node_modules/ffmpeg-static/install.js');
 });
 server.timeout = 0;
