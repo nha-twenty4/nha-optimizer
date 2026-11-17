@@ -167,8 +167,13 @@
     .free-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0, 245, 155, 0.12); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
     .creator-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(139, 92, 246, 0.18); border: 1px solid rgba(139, 92, 246, 0.45); color: #ddd6fe; }
     .vip-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.4); color: #fcd34d; }
-    .tier-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
-    .tier-sub { font-size: 0.86rem; color: var(--muted); margin-bottom: 18px; }
+
+    .tier-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 6px; }
+    .price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+    .price-main { font-family: 'JetBrains Mono', monospace; font-size: 1.55rem; font-weight: 800; color: var(--text); }
+    .price-sub { font-size: 0.82rem; color: var(--muted); }
+    .price-alt { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; color: var(--green-bright); background: rgba(0, 245, 155, 0.08); border: 1px solid rgba(0, 245, 155, 0.22); padding: 3px 8px; border-radius: 8px; }
+
     .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .spec-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 11px; }
     .spec-val { font-family: 'JetBrains Mono', monospace; font-size: 0.98rem; font-weight: 700; }
@@ -180,30 +185,40 @@
     .software-title { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--dim); margin-bottom: 8px; }
     .software-list { list-style: none; font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 5px; }
 
-    .support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 960px; margin: 0 auto; align-items: stretch; }
-    .support-card { position: relative; background: var(--card); border: 1px solid var(--border-strong); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px; backdrop-filter: blur(16px); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease; }
-    @media (hover: hover) { .support-card:hover { transform: translateY(-5px); } }
+    .tier-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tier-actions .btn { padding: 10px 8px; font-size: 0.82rem; }
+
+    .support-grid { display: grid; grid-template-columns: 1.08fr 1fr; gap: 24px; max-width: 980px; margin: 0 auto; align-items: stretch; }
+    .support-card { position: relative; background: var(--card); border: 1px solid var(--border-strong); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 16px; backdrop-filter: blur(16px); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.65s ease; }
     .support-card.tg-card { background: linear-gradient(180deg, rgba(42, 171, 238, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(42, 171, 238, 0.28); }
     .support-card.aba-card { background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(16, 20, 29, 0.92) 50%); border-color: rgba(239, 68, 68, 0.28); }
-    .support-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; padding: 4px 11px; border-radius: 999px; margin-bottom: 10px; }
+    .support-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; padding: 4px 11px; border-radius: 999px; margin-bottom: 8px; }
     .tag-tg { background: rgba(42, 171, 238, 0.14); color: #67c7f5; border: 1px solid rgba(42, 171, 238, 0.35); }
     .tag-aba { background: rgba(239, 68, 68, 0.14); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
-    .support-card h3 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; }
-    .support-card p { color: var(--muted); font-size: 0.92rem; }
-    .support-perks { background: rgba(0, 0, 0, 0.26); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; list-style: none; font-size: 0.88rem; color: #dbe2ee; }
-    .support-perks li { display: flex; align-items: center; gap: 10px; }
-    .perk-dot { width: 20px; height: 20px; border-radius: 50%; background: rgba(42, 171, 238, 0.16); color: #67c7f5; display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
-    .support-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
+    .support-card h3 { font-size: 1.42rem; font-weight: 800; margin-bottom: 4px; }
+    .support-card p { color: var(--muted); font-size: 0.9rem; }
+
+    .pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pkg-btn { text-align: left; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-strong); border-radius: 12px; padding: 10px 12px; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.18s ease; }
+    .pkg-btn:hover { border-color: rgba(255, 255, 255, 0.32); color: var(--text); }
+    .pkg-btn.active { background: rgba(0, 245, 155, 0.1); border-color: var(--green-bright); color: var(--text); box-shadow: 0 0 18px rgba(0, 245, 155, 0.14); }
+    .pkg-name { font-size: 0.8rem; font-weight: 700; }
+    .pkg-price { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; font-weight: 800; color: var(--green-bright); margin-top: 2px; }
+
+    .order-steps { background: rgba(0, 0, 0, 0.26); border: 1px solid var(--border); border-radius: 14px; padding: 14px; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: #dbe2ee; }
+    .order-steps li { display: flex; align-items: center; gap: 10px; }
+    .step-num { width: 20px; height: 20px; border-radius: 50%; background: rgba(0, 245, 155, 0.16); color: var(--green-bright); display: grid; place-items: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 800; flex-shrink: 0; }
+
+    .support-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
     .aba-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(0, 0, 0, 0.34); border: 1px solid var(--border-strong); border-radius: 14px; padding: 13px 16px; flex-wrap: wrap; }
     .aba-label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
     .aba-num { font-family: 'JetBrains Mono', monospace; font-size: clamp(0.95rem, 3.2vw, 1.12rem); font-weight: 800; color: var(--text); margin-top: 2px; word-break: break-all; }
     .qr-section { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 2px; }
-    .qr-frame { width: 100%; max-width: 225px; border-radius: 18px; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); background: #ffffff; }
+    .qr-frame { width: 100%; max-width: 220px; border-radius: 18px; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); background: #ffffff; }
     .qr-img { width: 100%; height: auto; display: block; }
     .qr-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; }
     .qr-fallback { display: none; color: #0f172a; font-size: 0.8rem; text-align: center; padding: 24px 12px; font-weight: 600; }
 
-    /* Auth Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 18px; z-index: 120; }
     .modal-backdrop.open { display: flex; animation: fadeUp 0.2s ease-out both; }
     .auth-modal { width: 100%; max-width: 420px; background: #0f131d; border: 1px solid var(--border-strong); border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75); }
@@ -250,7 +265,7 @@
 
     @media (max-width: 480px) {
       .brand { font-size: 1rem; }
-      .mode-grid { grid-template-columns: 1fr; }
+      .mode-grid, .pkg-grid, .tier-actions { grid-template-columns: 1fr; }
       .meta-grid { grid-template-columns: 1fr 1fr; }
       .qr-frame { max-width: 200px; }
     }
@@ -272,8 +287,8 @@
       </a>
       <nav class="nav-links">
         <a href="#optimizer">Optimizer</a>
-        <a href="#tiers">Plans &amp; Limits</a>
-        <a href="#support">VIP Key &amp; Donate</a>
+        <a href="#tiers">Pricing</a>
+        <a href="#support">Buy Key</a>
       </nav>
       <div class="nav-actions">
         <span class="user-pill" id="navUserPill" style="display:none;"></span>
@@ -289,8 +304,8 @@
 
     <div class="mobile-menu" id="mobileMenu">
       <a href="#optimizer" class="m-link">Optimizer</a>
-      <a href="#tiers" class="m-link">Plans &amp; Limits</a>
-      <a href="#support" class="m-link">VIP Key &amp; Donate</a>
+      <a href="#tiers" class="m-link">Pricing</a>
+      <a href="#support" class="m-link">Buy Key (ABA)</a>
       <div class="mobile-menu-actions">
         <button type="button" class="btn btn-primary" id="mobileAuthBtn" onclick="handleNavAuth()">Login</button>
         <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
@@ -303,11 +318,11 @@
       <div class="container">
         <div class="pill">
           <span class="pill-dot"></span>
-          NHA ENGINE 2.0 • ACCOUNT PROTECTED • 1 KEY = 1 ACCOUNT
+          NHA ENGINE 2.0 • 1080P &amp; 4K 120FPS VIDEO OPTIMIZER
         </div>
         <h1>Optimize Videos For <span class="gradient-text">TikTok 1080p 60FPS</span></h1>
         <p class="hero-sub">
-          Sign in for Free (250 MB • 5/day), or redeem a Creator (600 MB) / VIP (Unlimited) Key locked to your account.
+          Start Free (250 MB • 5/day), or upgrade to Creator ($2.99) / VIP ($6.99) with instant ABA KHQR Key activation.
         </p>
 
         <div class="optimizer-panel">
@@ -317,7 +332,7 @@
           </div>
 
           <div class="auth-gate" id="authGate">
-            <p>Log in or create a free account to optimize videos and link your Creator / VIP Key.</p>
+            <p>Log in or create a free account to optimize videos and activate your Creator / VIP Key.</p>
             <button type="button" class="btn btn-primary" onclick="openAuthModal('login')">Login / Create Free Account</button>
           </div>
 
@@ -327,7 +342,7 @@
               <form class="vip-form" id="vipForm">
                 <input type="text" class="vip-input" id="vipInput" placeholder="Creator / VIP Key..." autocomplete="off" />
                 <button type="submit" class="btn btn-amber vip-btn" id="vipBtn">Unlock Key</button>
-                <a href="#support" class="btn btn-secondary vip-btn">Get VIP Key</a>
+                <a href="#support" class="btn btn-secondary vip-btn">Buy Key</a>
               </form>
               <div class="vip-msg" id="vipMsg"></div>
             </div>
@@ -389,15 +404,18 @@
     <section class="section" id="tiers">
       <div class="container">
         <div class="section-header reveal">
-          <h2>Plans &amp; Limits</h2>
-          <p>Free up to 250 MB, Creator up to 600 MB with VIP Key, or VIP for Unlimited power.</p>
+          <h2>Pricing &amp; Plans</h2>
+          <p>Choose Free to try, or buy a Creator / VIP Key for bigger files and unlimited daily uploads.</p>
         </div>
 
         <div class="tiers-grid">
           <article class="tier-card reveal" style="transition-delay: 0.05s;">
-            <div class="tier-tag-row"><span class="tier-tag">MEMBER</span><span class="free-pill">$0 • FREE</span></div>
+            <div class="tier-tag-row"><span class="tier-tag">MEMBER</span><span class="free-pill">FREE</span></div>
             <div class="tier-title">Free</div>
-            <div class="tier-sub">Free account included</div>
+            <div class="price-row">
+              <span class="price-main">$0</span>
+              <span class="price-sub">Free forever</span>
+            </div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">250 MB</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
@@ -414,14 +432,18 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <button class="btn btn-secondary" style="width:100%" onclick="choosePreset('faststart')">Use Free (250 MB)</button>
+            <button class="btn btn-secondary" style="width:100%" onclick="choosePreset('faststart')">Use Free ($0)</button>
           </article>
 
           <article class="tier-card recommended reveal" style="transition-delay: 0.15s;">
-            <div class="rec-badge">Key Required • Best for TikTok</div>
-            <div class="tier-tag-row"><span class="tier-tag">CREATOR</span><span class="creator-pill">VIP KEY</span></div>
+            <div class="rec-badge">Popular • Best for TikTok</div>
+            <div class="tier-tag-row"><span class="tier-tag">CREATOR</span><span class="creator-pill">CREATOR KEY</span></div>
             <div class="tier-title">Creator</div>
-            <div class="tier-sub">15 Days or Lifetime Key</div>
+            <div class="price-row">
+              <span class="price-main">$2.99</span>
+              <span class="price-sub">/ 15 Days</span>
+              <span class="price-alt">$7.99 Lifetime</span>
+            </div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">600 MB</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">1080p</div><div class="spec-lbl">TikTok target</div></div>
@@ -438,14 +460,21 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <a href="#support" class="btn btn-purple" style="width:100%">Get VIP Key</a>
+            <div class="tier-actions">
+              <button type="button" class="btn btn-purple" onclick="selectPackage('creator15', true)">Buy 15d ($2.99)</button>
+              <button type="button" class="btn btn-secondary" onclick="selectPackage('creatorLife', true)">Lifetime ($7.99)</button>
+            </div>
           </article>
 
           <article class="tier-card premium reveal" style="transition-delay: 0.25s;">
-            <div class="rec-badge">VIP Key • Unlimited</div>
-            <div class="tier-tag-row"><span class="tier-tag">VIP UNLOCK</span><span class="vip-pill">KEY REQUIRED</span></div>
+            <div class="rec-badge">Unlimited Power</div>
+            <div class="tier-tag-row"><span class="tier-tag">VIP UNLOCK</span><span class="vip-pill">VIP KEY</span></div>
             <div class="tier-title">VIP</div>
-            <div class="tier-sub">30 Days or Lifetime Key</div>
+            <div class="price-row">
+              <span class="price-main">$6.99</span>
+              <span class="price-sub">/ 30 Days</span>
+              <span class="price-alt">$19.99 Lifetime</span>
+            </div>
             <div class="specs-grid">
               <div class="spec-box"><div class="spec-val">Unlimited</div><div class="spec-lbl">file size</div></div>
               <div class="spec-box"><div class="spec-val">4K</div><div class="spec-lbl">max resolution</div></div>
@@ -462,7 +491,10 @@
                 <li>Adobe Premiere Pro 2026</li><li>Adobe After Effects 2026</li><li>Topaz Video AI 2026</li><li>DaVinci Resolve 2026</li>
               </ul>
             </div>
-            <a href="#support" class="btn btn-amber" style="width:100%">Get VIP Key</a>
+            <div class="tier-actions">
+              <button type="button" class="btn btn-amber" onclick="selectPackage('vip30', true)">Buy 30d ($6.99)</button>
+              <button type="button" class="btn btn-secondary" onclick="selectPackage('vipLife', true)">Lifetime ($19.99)</button>
+            </div>
           </article>
         </div>
       </div>
@@ -471,39 +503,59 @@
     <section class="section" id="support">
       <div class="container">
         <div class="section-header reveal">
-          <h2>VIP Key, Contact &amp; Donate</h2>
-          <p>Donate via ABA KHQR and message @ZenZyTwenty4 on Telegram to receive your Creator (600 MB) or VIP (Unlimited) Key.</p>
+          <h2>Buy Creator / VIP Key</h2>
+          <p>Select your plan, pay via ABA KHQR, and send the payment screenshot to @ZenZyTwenty4 to receive your Key.</p>
         </div>
 
         <div class="support-grid">
           <div class="support-card tg-card reveal" style="transition-delay: 0.08s;">
             <div>
-              <span class="support-tag tag-tg">CONTACT OWNER</span>
-              <h3>Telegram Support &amp; VIP Key</h3>
-              <p>Message directly on Telegram for your Creator/VIP Key, custom presets, or help.</p>
+              <span class="support-tag tag-tg">STEP 1 &amp; 2 • CHOOSE PLAN</span>
+              <h3>Order &amp; Instant Delivery</h3>
+              <p>Pick a package below, pay via ABA QR, then tap the Telegram button to get your Key.</p>
             </div>
-            <ul class="support-perks">
-              <li><span class="perk-dot">✓</span> Get Key to unlock 600 MB or Unlimited</li>
-              <li><span class="perk-dot">✓</span> TikTok 1080p 60FPS &amp; 4K export settings</li>
-              <li><span class="perk-dot">✓</span> Topaz, Handbrake &amp; color grading presets</li>
-              <li><span class="perk-dot">✓</span> Direct contact &amp; bug reports</li>
+
+            <div class="pkg-grid" id="pkgGrid">
+              <button type="button" class="pkg-btn" data-pkg="creator15" onclick="selectPackage('creator15', false)">
+                <div class="pkg-name">Creator • 15 Days</div>
+                <div class="pkg-price">$2.99 (12,000៛)</div>
+              </button>
+              <button type="button" class="pkg-btn" data-pkg="creatorLife" onclick="selectPackage('creatorLife', false)">
+                <div class="pkg-name">Creator • Lifetime</div>
+                <div class="pkg-price">$7.99 (32,000៛)</div>
+              </button>
+              <button type="button" class="pkg-btn" data-pkg="vip30" onclick="selectPackage('vip30', false)">
+                <div class="pkg-name">VIP • 30 Days</div>
+                <div class="pkg-price">$6.99 (28,000៛)</div>
+              </button>
+              <button type="button" class="pkg-btn active" data-pkg="vipLife" onclick="selectPackage('vipLife', false)">
+                <div class="pkg-name">VIP • Lifetime</div>
+                <div class="pkg-price">$19.99 (80,000៛)</div>
+              </button>
+            </div>
+
+            <ul class="order-steps">
+              <li><span class="step-num">1</span> Scan ABA KHQR on the right (<strong id="orderTotal">$19.99 / 80,000៛</strong>)</li>
+              <li><span class="step-num">2</span> Screenshot receipt &amp; send to <strong>@ZenZyTwenty4</strong></li>
+              <li><span class="step-num">3</span> Receive your Key &amp; unlock your account instantly</li>
             </ul>
+
             <div class="support-bottom">
               <div class="aba-box">
-                <div><div class="aba-label">Telegram Username</div><div class="aba-num">@ZenZyTwenty4</div></div>
+                <div><div class="aba-label">Telegram Owner</div><div class="aba-num">@ZenZyTwenty4</div></div>
                 <button type="button" class="btn btn-secondary" onclick="copyText('@ZenZyTwenty4', this)">Copy</button>
               </div>
-              <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" class="btn btn-tg" style="width: 100%;">
-                Message @ZenZyTwenty4 on Telegram
+              <a id="tgOrderBtn" href="https://t.me/ZenZyTwenty4?text=Hello!%20I%20want%20to%20buy%20VIP%20Lifetime%20Key%20(%2419.99)%20via%20ABA." target="_blank" rel="noopener noreferrer" class="btn btn-tg" style="width: 100%;">
+                Send Receipt to @ZenZyTwenty4 (VIP Lifetime - $19.99)
               </a>
             </div>
           </div>
 
           <div class="support-card aba-card reveal" style="transition-delay: 0.18s;">
             <div>
-              <span class="support-tag tag-aba">DONATE • ABA BANK</span>
-              <h3>Support Nha Engine 2.0</h3>
-              <p>Scan the ABA KHQR below or copy the account number, then send receipt to @ZenZyTwenty4 for your Key.</p>
+              <span class="support-tag tag-aba">PAY WITH ABA BANK</span>
+              <h3>ABA KHQR Payment</h3>
+              <p>Scan with ABA Mobile or any KHQR banking app in Cambodia, or copy the account number.</p>
             </div>
             <div class="aba-box">
               <div><div class="aba-label">ABA Account (PANHA SAREAM)</div><div class="aba-num">015 262 971</div></div>
@@ -525,7 +577,7 @@
 
   <footer>
     <div class="container">
-      Nha Engine 2.0 • Contact: <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" style="color:var(--green-bright); text-decoration:none;">@ZenZyTwenty4</a> • ABA Donate: 015 262 971
+      Nha Engine 2.0 • Buy Key / Support: <a href="https://t.me/ZenZyTwenty4" target="_blank" rel="noopener noreferrer" style="color:var(--green-bright); text-decoration:none;">@ZenZyTwenty4</a> • ABA: 015 262 971
     </div>
   </footer>
 
@@ -556,12 +608,17 @@
   </div>
 
   <script>
-    // ====== PUT YOUR SUPABASE PROJECT URL & ANON KEY HERE ======
     const SUPABASE_URL = 'https://omrklwwgmbvlgmdfhbot.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_vamrbGtPSLckDQwKio7tqw_TctCPc0n';
-    // ===========================================================
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const PACKAGES = {
+      creator15: { label: 'Creator 15 Days', price: '$2.99', khr: '12,000៛' },
+      creatorLife: { label: 'Creator Lifetime', price: '$7.99', khr: '32,000៛' },
+      vip30: { label: 'VIP 30 Days', price: '$6.99', khr: '28,000៛' },
+      vipLife: { label: 'VIP Lifetime', price: '$19.99', khr: '80,000៛' }
+    };
 
     let currentUser = null;
     let currentSession = null;
@@ -609,6 +666,21 @@
     const vipForm = document.getElementById('vipForm');
     const vipInput = document.getElementById('vipInput');
     const vipMsg = document.getElementById('vipMsg');
+    const orderTotal = document.getElementById('orderTotal');
+    const tgOrderBtn = document.getElementById('tgOrderBtn');
+
+    function selectPackage(pkgKey, scroll = false) {
+      const pkg = PACKAGES[pkgKey] || PACKAGES.vipLife;
+      document.querySelectorAll('.pkg-btn').forEach(b => b.classList.toggle('active', b.dataset.pkg === pkgKey));
+      orderTotal.textContent = `${pkg.price} / ${pkg.khr}`;
+      const emailPart = currentUser?.email ? ` (Account: ${currentUser.email})` : '';
+      const msg = `Hello! I want to buy ${pkg.label} Key (${pkg.price}) via ABA${emailPart}.`;
+      tgOrderBtn.href = `https://t.me/ZenZyTwenty4?text=${encodeURIComponent(msg)}`;
+      tgOrderBtn.textContent = `Send Receipt to @ZenZyTwenty4 (${pkg.label} - ${pkg.price})`;
+      if (scroll) {
+        document.getElementById('support').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
 
     menuToggle.addEventListener('click', () => {
       const isOpen = mobileMenu.classList.toggle('open');
@@ -647,9 +719,7 @@
       authModal.classList.add('open');
     }
 
-    function closeAuthModal() {
-      authModal.classList.remove('open');
-    }
+    function closeAuthModal() { authModal.classList.remove('open'); }
 
     function switchAuthTab(mode) {
       authMode = mode;
@@ -660,11 +730,8 @@
     }
 
     async function handleNavAuth() {
-      if (currentUser) {
-        await sb.auth.signOut();
-      } else {
-        openAuthModal('login');
-      }
+      if (currentUser) await sb.auth.signOut();
+      else openAuthModal('login');
     }
 
     function showAuthMsg(text, ok = false) {
@@ -683,11 +750,8 @@
         if (authMode === 'signup') {
           const { data, error } = await sb.auth.signUp({ email, password });
           if (error) throw error;
-          if (!data.session) {
-            showAuthMsg('Account created! Please check your email to confirm, then log in.', true);
-          } else {
-            closeAuthModal();
-          }
+          if (!data.session) showAuthMsg('Account created! Please check your email to confirm, then log in.', true);
+          else closeAuthModal();
         } else {
           const { error } = await sb.auth.signInWithPassword({ email, password });
           if (error) throw error;
@@ -749,6 +813,7 @@
         quotaBadge.textContent = `Uploads left today: ${currentProfile.remaining} / ${currentProfile.daily_limit} • Max ${currentProfile.max_mb} MB`;
         limitSummary.textContent = `Free: ${currentProfile.max_mb} MB max • ${currentProfile.daily_limit}/day`;
       }
+      selectPackage('vipLife', false);
     }
 
     async function loadProfile() {
@@ -861,13 +926,13 @@
       const sizeMB = selectedFile.size / (1024 * 1024);
       if (sizeMB > maxMB) {
         progressWrap.classList.add('visible');
-        showError(`File (${sizeMB.toFixed(1)} MB) exceeds your ${currentProfile.plan.toUpperCase()} limit (${maxMB} MB). Enter a Creator or VIP Key above!`);
+        showError(`File (${sizeMB.toFixed(1)} MB) exceeds your ${currentProfile.plan.toUpperCase()} limit (${maxMB} MB). Buy a Creator or VIP Key below!`);
         return;
       }
 
       if (currentProfile.remaining !== null && currentProfile.remaining <= 0) {
         progressWrap.classList.add('visible');
-        showError(`Daily limit reached (${currentProfile.daily_limit}/${currentProfile.daily_limit} today). Enter a VIP Key above or try tomorrow!`);
+        showError(`Daily limit reached (${currentProfile.daily_limit}/${currentProfile.daily_limit} today). Buy a VIP Key or try tomorrow!`);
         return;
       }
 
