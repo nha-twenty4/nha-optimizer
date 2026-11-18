@@ -219,6 +219,7 @@
     .qr-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; }
     .qr-fallback { display: none; color: #0f172a; font-size: 0.8rem; text-align: center; padding: 24px 12px; font-weight: 600; }
 
+    /* Auth Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.76); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 18px; z-index: 120; }
     .modal-backdrop.open { display: flex; animation: fadeUp 0.2s ease-out both; }
     .auth-modal { width: 100%; max-width: 420px; background: #0f131d; border: 1px solid var(--border-strong); border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75); }
@@ -235,6 +236,9 @@
     .auth-msg.visible { display: block; }
     .auth-msg.err { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
     .auth-msg.ok { background: rgba(0, 245, 155, 0.1); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--green-bright); }
+    .auth-link-row { display: flex; justify-content: flex-end; margin: -4px 0 14px; }
+    .auth-text-btn { background: none; border: none; color: var(--cyan); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 2px 0; }
+    .auth-text-btn:hover { text-decoration: underline; }
 
     footer { border-top: 1px solid var(--border); padding: 28px 0 calc(28px + env(safe-area-inset-bottom)); text-align: center; color: var(--dim); font-size: 0.84rem; }
 
@@ -588,21 +592,27 @@
         <h3 id="authTitle">Login to Nha Engine</h3>
         <button type="button" class="auth-close" onclick="closeAuthModal()">&times;</button>
       </div>
-      <div class="auth-tabs">
+      <div class="auth-tabs" id="authTabs">
         <button type="button" class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
         <button type="button" class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Create Account</button>
       </div>
       <div class="auth-msg" id="authMsg"></div>
       <form id="authForm">
-        <div class="auth-field">
+        <div class="auth-field" id="emailField">
           <label for="authEmail">Email</label>
           <input type="email" id="authEmail" required placeholder="you@example.com" />
         </div>
-        <div class="auth-field">
-          <label for="authPassword">Password (min 6 characters)</label>
+        <div class="auth-field" id="passwordField">
+          <label for="authPassword" id="passwordLabel">Password (min 6 characters)</label>
           <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" />
         </div>
+        <div class="auth-link-row" id="forgotLinkWrap">
+          <button type="button" class="auth-text-btn" onclick="switchAuthTab('forgot')">Forgot password?</button>
+        </div>
         <button type="submit" class="btn btn-primary" id="authSubmitBtn" style="width:100%;">Login</button>
+        <div class="auth-link-row" id="backToLoginWrap" style="display:none; justify-content:center; margin:12px 0 0;">
+          <button type="button" class="auth-text-btn" onclick="switchAuthTab('login')">← Back to Login</button>
+        </div>
       </form>
     </div>
   </div>
@@ -638,8 +648,14 @@
     const appWorkspace = document.getElementById('appWorkspace');
     const authModal = document.getElementById('authModal');
     const authTitle = document.getElementById('authTitle');
+    const authTabs = document.getElementById('authTabs');
     const tabLogin = document.getElementById('tabLogin');
     const tabSignup = document.getElementById('tabSignup');
+    const emailField = document.getElementById('emailField');
+    const passwordField = document.getElementById('passwordField');
+    const passwordLabel = document.getElementById('passwordLabel');
+    const forgotLinkWrap = document.getElementById('forgotLinkWrap');
+    const backToLoginWrap = document.getElementById('backToLoginWrap');
     const authForm = document.getElementById('authForm');
     const authEmail = document.getElementById('authEmail');
     const authPassword = document.getElementById('authPassword');
@@ -723,10 +739,44 @@
 
     function switchAuthTab(mode) {
       authMode = mode;
+      authMsg.className = 'auth-msg';
       tabLogin.classList.toggle('active', mode === 'login');
       tabSignup.classList.toggle('active', mode === 'signup');
-      authTitle.textContent = mode === 'login' ? 'Login to Nha Engine' : 'Create Free Account';
-      authSubmitBtn.textContent = mode === 'login' ? 'Login' : 'Create Free Account';
+
+      if (mode === 'forgot') {
+        authTabs.style.display = 'none';
+        emailField.style.display = 'block';
+        authEmail.required = true;
+        passwordField.style.display = 'none';
+        authPassword.required = false;
+        forgotLinkWrap.style.display = 'none';
+        backToLoginWrap.style.display = 'flex';
+        authTitle.textContent = 'Reset Password';
+        authSubmitBtn.textContent = 'Send Reset Link';
+      } else if (mode === 'reset') {
+        authTabs.style.display = 'none';
+        emailField.style.display = 'none';
+        authEmail.required = false;
+        passwordField.style.display = 'block';
+        authPassword.required = true;
+        authPassword.value = '';
+        passwordLabel.textContent = 'New Password (min 6 characters)';
+        forgotLinkWrap.style.display = 'none';
+        backToLoginWrap.style.display = 'none';
+        authTitle.textContent = 'Set New Password';
+        authSubmitBtn.textContent = 'Update Password';
+      } else {
+        authTabs.style.display = 'grid';
+        emailField.style.display = 'block';
+        authEmail.required = true;
+        passwordField.style.display = 'block';
+        authPassword.required = true;
+        passwordLabel.textContent = 'Password (min 6 characters)';
+        forgotLinkWrap.style.display = mode === 'login' ? 'flex' : 'none';
+        backToLoginWrap.style.display = 'none';
+        authTitle.textContent = mode === 'login' ? 'Login to Nha Engine' : 'Create Free Account';
+        authSubmitBtn.textContent = mode === 'login' ? 'Login' : 'Create Free Account';
+      }
     }
 
     async function handleNavAuth() {
@@ -747,7 +797,18 @@
       const password = authPassword.value;
 
       try {
-        if (authMode === 'signup') {
+        if (authMode === 'forgot') {
+          const { error } = await sb.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin
+          });
+          if (error) throw error;
+          showAuthMsg('Reset link sent! Check your email Inbox or Spam folder.', true);
+        } else if (authMode === 'reset') {
+          const { error } = await sb.auth.updateUser({ password });
+          if (error) throw error;
+          showAuthMsg('Password updated! You are now logged in.', true);
+          setTimeout(() => closeAuthModal(), 1200);
+        } else if (authMode === 'signup') {
           const { data, error } = await sb.auth.signUp({ email, password });
           if (error) throw error;
           if (!data.session) showAuthMsg('Account created! Please check your email to confirm, then log in.', true);
@@ -852,10 +913,13 @@
       showVipMsg(`${data.plan.toUpperCase()} Key activated and locked to your account!`, true);
     });
 
-    sb.auth.onAuthStateChange((_, session) => {
+    sb.auth.onAuthStateChange((event, session) => {
       currentSession = session;
       currentUser = session?.user || null;
       loadProfile();
+      if (event === 'PASSWORD_RECOVERY') {
+        openAuthModal('reset');
+      }
     });
 
     (async () => {
